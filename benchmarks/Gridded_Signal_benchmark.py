@@ -26,19 +26,19 @@ import csv as c
 
 if __name__ == "__main__":
 
-    n_skies=file_len('Test_haloCounts.csv')-1 # Test set only, doesnt train
+    n_skies=file_len('../data/Test_haloCounts.csv')-1 # Test set only, doesnt train
     
     position_halo=np.zeros([n_skies,2,3],float) #Set up the array in which I will
                                                 #assign my estimated positions
     
-    nhalo=np.loadtxt('Test_haloCounts.csv',\
+    nhalo=np.loadtxt('../data/Test_haloCounts.csv',\
         usecols=(1,),delimiter=',',skiprows=1) #Load in the number of halos for each sky
             
     for k in xrange(n_skies):
         p=k+1
         #Read in the x,y,e1 and e2 positions of
         #each galaxy in the list for sky number k:
-        x,y,e1,e2=np.loadtxt('Test_Skies/Test_Sky%i.csv'\
+        x,y,e1,e2=np.loadtxt('../data/Test_Skies/Test_Sky%i.csv'\
                              % p,delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
 
         #So I need to grid the sky up. Here I set the parameters of the grid.

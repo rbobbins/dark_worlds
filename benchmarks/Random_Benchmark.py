@@ -28,12 +28,12 @@ def file_len(fname):
 if __name__ == "__main__":
 
 
-  n_skies=file_len('Test_haloCounts.csv')-1 # Test set only, doesnt train
+  n_skies=file_len('../data/Test_haloCounts.csv')-1 # Test set only, doesnt train
      
   position_halo=np.zeros([n_skies,2,3],float) #Set up the array in which I will
                                                 #assign my estimated positions
     
-  nhalo=np.loadtxt('Test_haloCounts.csv',\
+  nhalo=np.loadtxt('../data/Test_haloCounts.csv',\
                    usecols=(1,),delimiter=',',skiprows=1) #Load in the number
                                                           #of halos for each sky
 
