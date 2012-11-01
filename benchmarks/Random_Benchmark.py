@@ -1,6 +1,7 @@
 """ Random Position Estimator
 
-This code just randomly guesses the positions of halos given the number of halos
+This code just randomly guesses the positions of halos 
+given the number of halos
 
 @Author: David Harvey
 Created: 6th September 2012
