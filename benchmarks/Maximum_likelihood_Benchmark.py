@@ -1,8 +1,15 @@
 """ Maximum_likelihood_Benchmark.py
 
-This small code only works on the test set. It creates a halo at a given position x0,y0 and calculates what the ellipticity of the galaxies would look like given a 1/r model. From this it creayes likelihood for a halo given x0,y0. It then iterates over the field grid point at a time. The result is a likelihood map of nbinxnbin size grid. The position of the halo is the grid point with the maximum likelihood.
+This small code only works on the test set. It creates a halo at a 
+given position x0,y0 and calculates what the ellipticity of the 
+galaxies would look like given a 1/r model. From this it creayes 
+likelihood for a halo given x0,y0. It then iterates over the field 
+grid point at a time. The result is a likelihood map of nbinxnbin 
+size grid. The position of the halo is the grid point with the 
+maximum likelihood.
 
-Note this code can only calculate the position of 1 halo and cannot cope with more than one halo
+Note this code can only calculate the position of 1 halo and cannot 
+cope with more than one halo
 
 @Author: David Harvey
 Created: 22 August 2012

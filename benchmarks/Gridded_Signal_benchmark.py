@@ -1,6 +1,13 @@
 """ Gridded_Signal_benchmak.py
 
-This small code grids up the sky and then finds the signal in each bin. The signal in this case is the force tangential to the galaxy which is e_tangential=-(e1cos(theta)+e2sin(theta)) where theta is the angle between the galaxy and the proposed centre of the halo. From this the pixel with the largest signal should contain the halo. In the case of more than one halo, we should find that the top two or three bins in the gridded area should contain the or 2 or 3 halos. Therefore this code should be able to find all three halos.
+This small code grids up the sky and then finds the signal in each bin. 
+The signal in this case is the force tangential to the galaxy which is 
+e_tangential=-(e1cos(theta)+e2sin(theta)) where theta is the angle between 
+the galaxy and the proposed centre of the halo. From this the pixel with 
+the largest signal should contain the halo. In the case of more than one 
+halo, we should find that the top two or three bins in the gridded area 
+should contain the or 2 or 3 halos. Therefore this code should be able to 
+find all three halos.
 
 @Author: David Harvey
 Created: 22 August 2012
