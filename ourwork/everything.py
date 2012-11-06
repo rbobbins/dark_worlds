@@ -10,7 +10,6 @@ class Galaxy:
     self.y = y
     self.e1 = e1
     self.e2 = e2
-
     self.determine_axes()
 
   def determine_axes(self):
@@ -184,35 +183,21 @@ def file_len(fname):
 
 def objectify_data():
   n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
-  halos=3 #Number of halos in the most complicated sky
-  position_halo=np.zeros([n_skies,2,halos],float) #The array in which
-              #I will record the position
-              #of each halo
-
-  nhalo = np.zeros([n_skies],float)
-  col=np.zeros([1],int)+1
-  nhalo=np.loadtxt('../data/Test_haloCounts.csv',\
-       usecols=(1,),skiprows=1,delimiter=',')
-
-            #Read in num_halos
   res = []
   for k in xrange(n_skies):
     sky = Sky()
     p=k+1
     x,y,e1,e2=np.loadtxt('../data/Test_Skies/Test_Sky%i.csv' % p,\
              delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
-        #Read in the x,y,e1 and e2
-        #positions of each galaxy in the list for sky number k:
+    
     for i in range(len(x) - 1):
       sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
     res.append(sky)
   return res
 
-def plot_data():
+def write_data():
   data = objectify_data()
 
-  # for sky in data:
-    
   c = csv.writer(open("Gridded_Signal_benchmark_redo.csv", "wb")) #Now write the array to a csv file
   c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
   for k in xrange(len(data)):
@@ -228,4 +213,4 @@ def plot_data():
 
 
 if __name__ == "__main__":
-  plot_data()
+  write_data()
