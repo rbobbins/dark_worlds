@@ -3,6 +3,7 @@ import csv
 import matplotlib.pyplot as plt
 from pylab import figure, show, rand
 from matplotlib.patches import Ellipse 
+# from math import *
 
 class Galaxy:
   def __init__(self, x, y, e1, e2):
@@ -24,7 +25,7 @@ class Galaxy:
 class Sky:
   def __init__(self):
     self.galaxies = []
-
+    self.predictions = [(0, 0), (0, 0), (0, 0)]
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
@@ -48,12 +49,11 @@ class Sky:
     ax.set_ylim(0, 4200)
     show()
 
-  def gridded_signal(self):
-    position_halo=np.zeros([2,3],float) #Set up the array in which I will
+  def gridded_signal(self,nbin=15):
+    position_halo = [(0,0), (0,0), (0,0)] #Set up the array in which I will
                                         #assign my estimated positions
     nhalo = 1
 
-    nbin=15                 #Number of bins in my grid
     image_size=4200.0       #Overall size of my image
     binwidth=float(image_size)/float(nbin) # The resulting width of each grid section
 
@@ -98,28 +98,20 @@ class Sky:
                                                #of one of the halos
     index=index[::-1] #Reverse the array so the largest is first
     for n in xrange(nhalo):
-      position_halo[0,n]=np.where(average_tan_force\
-                                      == index[n])[0][0]\
-                                      *binwidth
-                                      #For each halo in the sky find
-                                      #the position and assign
-      position_halo[1,n]=np.where(average_tan_force\
-                                      == index[n])[1][0]\
-                                      *binwidth
-                                      #The three grid bins
-                                      #with the highest signal should
-                                      #contain the three halos.
+      x = np.where(average_tan_force == index[n])[0][0] * binwidth
+      y = np.where(average_tan_force == index[n])[1][0] * binwidth
+      position_halo[n] = (x, y)
+
     return position_halo
 
-
-  def max_likelihood(self):
+  def max_likelihood(self, nbin=15):
     halos=3 #Number of halos in the most complicated sky
-    position_halo=np.zeros([2,halos],float) #The array in which
+    # position_halo=np.zeros([2,halos],float) #The array in which
+    position_halo = [(0,0), (0, 0), (0, 0)]
                 #I will record the position
                 #of each halo
 
     #   #Grid the sky up. Here I set the parameters of the grid.
-    nbin=10 #Number of bins in my grid
     image_size=4200.0 #Overall size of my image
     binwidth=image_size/float(nbin) # The resulting width of each grid section
     likelihood=np.zeros([nbin,nbin],float) #The array in which I am going
@@ -160,12 +152,31 @@ class Sky:
         # I then find the likelihood that a halo is at position x0,y0
             
             
-    position_halo[0,0] = np.where(likelihood == \
-            np.max(likelihood))[0][0]*binwidth
-    position_halo[1,0] = np.where(likelihood == \
-            np.max(likelihood))[1][0]*binwidth
+    x = (np.where(likelihood == np.max(likelihood))[0][0]*binwidth).tolist()
+    y = (np.where(likelihood == np.max(likelihood))[1][0]*binwidth).tolist()
 
+    position_halo[0] = (x, y)
     return position_halo
+
+  def combined_approach(self):
+    result1 = self.gridded_signal()
+    result2 = self.max_likelihood()
+    position_halos = [(0,0), (0,0), (0, 0)]
+
+    # for i in [0, 1, 2]:
+    x1, y1 = result1[0]
+    x2, y2 = result2[0]
+
+    distance = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+
+    if distance < 200:
+      # x = np.average([x1, x2])
+      # y = np.average([y1, y2])
+      position_halos[0] = (x1, y1)
+    else:
+      position_halos[0] = (x1, y1)
+      position_halos[1] = (x2, y2)
+    return position_halos
 
 
 def file_len(fname):
@@ -181,13 +192,21 @@ def file_len(fname):
       pass
   return i + 1
 
-def objectify_data():
-  n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
+def objectify_data(test=True):
+  if test:
+    n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
+  else:
+    n_skies=file_len('../data/Training_halos.csv')-1
   res = []
   for k in xrange(n_skies):
     sky = Sky()
     p=k+1
-    x,y,e1,e2=np.loadtxt('../data/Test_Skies/Test_Sky%i.csv' % p,\
+    
+    if test:
+      x,y,e1,e2=np.loadtxt('../data/Test_Skies/Test_Sky%i.csv' % p,\
+             delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
+    else:
+      x,y,e1,e2=np.loadtxt('../data/Train_Skies/Training_Sky%i.csv' % p,\
              delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
     
     for i in range(len(x) - 1):
@@ -195,22 +214,44 @@ def objectify_data():
     res.append(sky)
   return res
 
+def optimize_params():
+  # n_skies=file_len('../data/Train_halos.csv')-1
+  data = objectify_data(test=False)
+
+  for nbins in [5, 10, 15, 20, 25]:
+    output_file = "optimize_bins_%ibins.csv" % nbins
+    print output_file
+    c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
+    c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
+
+    for k in xrange(len(data)):
+      pos_halo = data[k].gridded_signal(nbins)
+      halostr=['Sky'+str(k+1)]
+
+      for n in xrange(3):
+        halostr.append(pos_halo[n][0]) 
+        halostr.append(pos_halo[n][1])
+      c.writerow(halostr) 
+
 def write_data():
   data = objectify_data()
 
-  c = csv.writer(open("Gridded_Signal_benchmark_redo.csv", "wb")) #Now write the array to a csv file
+  c = csv.writer(open("attempt2.csv", "wb")) #Now write the array to a csv file
   c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
   for k in xrange(len(data)):
     halostr=['Sky'+str(k+1)] #Create a string that will write to the file
                     #and give the first element the sky_id
-    pos_halo= data[k].gridded_signal()
+    # pos_halo= data[k].gridded_signal()
+    # pos_halo = data[k].max_likelihood()
+    pos_halo = data[k].combined_approach()
     for n in xrange(3):
-      halostr.append(pos_halo[0,n]) #Assign each of the
+      halostr.append(pos_halo[n][0]) #Assign each of the
                                            #halo x and y positions to the string
-      halostr.append(pos_halo[1,n])
+      halostr.append(pos_halo[n][1])
     c.writerow(halostr) #Write the string to a csv
                         #file with the sky_id and the estimated positions
 
 
 if __name__ == "__main__":
-  write_data()
+  # write_data()
+  optimize_params()
