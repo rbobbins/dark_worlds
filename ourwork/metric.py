@@ -180,7 +180,7 @@ def get_ref(x_halo,y_halo,weight):
 
     return x_ref,y_ref
 
-def main(user_fname, fname):
+def analyze(user_fname, fname):
     """ Script to compute the evaluation metric for the Observing Dark Worlds 
     competition. You can run it on your training data to understand how well 
     you have done with the training data.
@@ -221,9 +221,9 @@ def main(user_fname, fname):
                                                          #first input would be
                                                          #a float, if succed its
                                                          #not a header
-        print 'THE INPUT FILE DOESNT APPEAR TO HAVE A HEADER'
+        # print 'THE INPUT FILE DOESNT APPEAR TO HAVE A HEADER'
     except :
-        print 'THE INPUT FILE APPEARS TO HAVE A HEADER, SKIPPING THE FIRST LINE'
+        # print 'THE INPUT FILE APPEARS TO HAVE A HEADER, SKIPPING THE FIRST LINE'
 
         skip_header = sky_prediction.next()
         
@@ -314,10 +314,11 @@ def main(user_fname, fname):
     W1=1./1000. #Weight the av_r such that < 1 i a good score > 1 isnt so good.
     W2=1.
     metric = W1*av_r + W2*angle_vec #Weighted metric, weights TBD
-    print '-----------Results for ', user_fname, '---------------'
-    print 'Your average distance in pixels you are away from the true halo is', av_r
-    print 'Your average angular vector is', angle_vec
-    print 'Your score for the training data is', metric
+    # print '-----------Results for ', user_fname, '---------------'
+    # print 'Your average distance in pixels you are away from the true halo is', av_r
+    # print 'Your average angular vector is', angle_vec
+    # print 'Your score for the training data is', metric
+    return metric
 
 
 if __name__ == "__main__":
@@ -335,5 +336,5 @@ if __name__ == "__main__":
     else:
         fname=args.reffile[0]
 
-    main(user_fname, fname)
+    analyze(user_fname, fname)
     

@@ -3,6 +3,8 @@ import csv
 import matplotlib.pyplot as plt
 from pylab import figure, show, rand
 from matplotlib.patches import Ellipse 
+from metric import analyze
+import os
 # from math import *
 
 class Galaxy:
@@ -197,7 +199,9 @@ def objectify_data(test=True):
     n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
   else:
     n_skies=file_len('../data/Training_halos.csv')-1
+  
   res = []
+  
   for k in xrange(n_skies):
     sky = Sky()
     p=k+1
@@ -214,44 +218,47 @@ def objectify_data(test=True):
     res.append(sky)
   return res
 
-def optimize_params():
-  # n_skies=file_len('../data/Train_halos.csv')-1
-  data = objectify_data(test=False)
+def optimize_params(min_bins=1, max_bins=30):
+  """
+  Iterates over different values of nbins to find the optimum
+  number of bins for the gridded_signal method.
+  """
+  skies = objectify_data(test=False)
 
-  for nbins in [5, 10, 15, 20, 25]:
-    output_file = "optimize_bins_%ibins.csv" % nbins
-    print output_file
-    c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
-    c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
+  results = {}
+  for n in range(min_bins, max_bins):
+    output_file = "optimize_bins_%ibins.csv" % n
+    
+    write_data(skies, output_file, Sky.gridded_signal, [n])
+    metric = analyze(output_file, '../data/Training_halos.csv')
+    results[n] = metric
 
-    for k in xrange(len(data)):
-      pos_halo = data[k].gridded_signal(nbins)
-      halostr=['Sky'+str(k+1)]
+    os.remove(output_file)
 
-      for n in xrange(3):
-        halostr.append(pos_halo[n][0]) 
-        halostr.append(pos_halo[n][1])
-      c.writerow(halostr) 
+  for k, v in results.items():
+    print k, v
 
-def write_data():
-  data = objectify_data()
+def write_data(skies=None, output_file='genericOutput.csv', method=None, opts=[]):
+  if skies == None:
+    skies = objectify_data()
 
-  c = csv.writer(open("attempt2.csv", "wb")) #Now write the array to a csv file
+  print "Writing %s" % output_file
+  c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
   c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
-  for k in xrange(len(data)):
-    halostr=['Sky'+str(k+1)] #Create a string that will write to the file
-                    #and give the first element the sky_id
-    # pos_halo= data[k].gridded_signal()
-    # pos_halo = data[k].max_likelihood()
-    pos_halo = data[k].combined_approach()
+  
+  for k in xrange(len(skies)):
+    halostr=['Sky'+str(k+1)]
+    # pos_halo= skies[k].gridded_signal()
+    # pos_halo = skies[k].max_likelihood()
+    pos_halo = method(skies[k], *opts)
     for n in xrange(3):
-      halostr.append(pos_halo[n][0]) #Assign each of the
-                                           #halo x and y positions to the string
+      halostr.append(pos_halo[n][0])
       halostr.append(pos_halo[n][1])
-    c.writerow(halostr) #Write the string to a csv
-                        #file with the sky_id and the estimated positions
+
+    c.writerow(halostr)
 
 
 if __name__ == "__main__":
   # write_data()
   optimize_params()
+  # analyze('optimize_bins_5bins.csv', '../data/Training_halos.csv')
