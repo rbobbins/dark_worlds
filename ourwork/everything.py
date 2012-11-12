@@ -51,7 +51,7 @@ class Sky:
     ax.set_ylim(0, 4200)
     show()
 
-  def gridded_signal(self,nbin=15):
+  def gridded_signal(self, nbin=15, radius=560, radius_weight=0.5):
     position_halo = [(0,0), (0,0), (0,0)] #Set up the array in which I will
                                         #assign my estimated positions
     nhalo = 1
@@ -59,6 +59,8 @@ class Sky:
     image_size=4200.0       #Overall size of my image
     binwidth=float(image_size)/float(nbin) # The resulting width of each grid section
 
+    average_bin_tan_force=np.zeros([nbin,nbin],float)
+    average_radius_tan_force=np.zeros([nbin,nbin],float)
     average_tan_force=np.zeros([nbin,nbin],float) #Set up the signal array
                                                   #in which Im going to find
                                                   #the maximum of.
@@ -75,25 +77,35 @@ class Sky:
         angle_wrt_halo=np.arctan((y-y0)/(x-x0)) #I find the angle each
                                             #galaxy is at with respects
                                             #to the centre of the halo.               
-        tangential_force=-(e1*np.cos(2.0*angle_wrt_halo)\
+        tangential_force = -(e1*np.cos(2.0*angle_wrt_halo)\
                        +e2*np.sin(2.0*angle_wrt_halo))
                        #Find out what the tangential force
                        #(or signal) is for each galaxy with
                        #respects to the halo centre, (x0,y0)
-        tangential_force_in_bin=tangential_force[(x >= i*binwidth) & \
-                                             (x < (i+1)*binwidth) & \
-                                             (y >= j*binwidth) & \
-                                             (y < (j+1)*binwidth)]
+        tangential_force_in_bin = tangential_force[ (x >= i*binwidth) & \
+                                                    (x < (i+1)*binwidth) & \
+                                                    (y >= j*binwidth) & \
+                                                    (y < (j+1)*binwidth)]
                             #Find out which galaxies lie within the gridded box
+        tangential_force_in_radius = tangential_force[(np.abs(x-x0) >= binwidth/2) & \
+                                                      (np.abs(x-x0) < radius) & \
+                                                      (np.abs(y-y0) >= binwidth/2) & \
+                                                      (np.abs(y-y0) < radius)]
 
 
         if len(tangential_force_in_bin) > 0:
-          average_tan_force[i,j]=sum(tangential_force_in_bin)\
-                /len(tangential_force_in_bin) #Find the average signal per galaxy
+          average_bin_tan_force[i,j] = sum(tangential_force_in_bin)/len(tangential_force_in_bin)
         else:
-          average_tan_force[i,j]=0
+          average_bin_tan_force[i,j] = 0
+
+        if len(tangential_force_in_radius) > 0:
+          average_radius_tan_force[i,j] = sum(tangential_force_in_radius)/len(tangential_force_in_radius)
+        else:
+          average_radius_tan_force[i,j] = 0;
+
             
 
+    average_tan_force = radius_weight*average_radius_tan_force + average_bin_tan_force
     index=np.sort(average_tan_force,axis=None) #Sort the grid into the
                                                #highest value bin first,
                                                #which should be the centre
@@ -218,7 +230,7 @@ def objectify_data(test=True):
     res.append(sky)
   return res
 
-def optimize_params(min_bins=1, max_bins=30):
+def optimize_bins(min_bins=1, max_bins=30):
   """
   Iterates over different values of nbins to find the optimum
   number of bins for the gridded_signal method.
@@ -238,7 +250,27 @@ def optimize_params(min_bins=1, max_bins=30):
   for k, v in results.items():
     print k, v
 
-def write_data(skies=None, output_file='genericOutput.csv', method=None, opts=[]):
+def optimize_radius(min_radius = 200, max_radius = 800):
+  """
+  Iterates over different values of nbins to find the optimum
+  number of bins for the gridded_signal method.
+  """
+  skies = objectify_data(test=False)
+
+  results = {}
+  for n in range(min_radius, max_radius, 100):
+    output_file = "optimize_radius_%ir.csv" % n
+    
+    write_data(skies, output_file, Sky.gridded_signal, {"radius": n})
+    metric = analyze(output_file, '../data/Training_halos.csv')
+    results[n] = metric
+
+    os.remove(output_file)
+
+  for k, v in results.items():
+    print k, v
+
+def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}):
   if skies == None:
     skies = objectify_data()
 
@@ -250,7 +282,7 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts=[]
     halostr=['Sky'+str(k+1)]
     # pos_halo= skies[k].gridded_signal()
     # pos_halo = skies[k].max_likelihood()
-    pos_halo = method(skies[k], *opts)
+    pos_halo = method(skies[k], **opts)
     for n in xrange(3):
       halostr.append(pos_halo[n][0])
       halostr.append(pos_halo[n][1])
@@ -259,6 +291,7 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts=[]
 
 
 if __name__ == "__main__":
-  # write_data()
-  optimize_params()
+  # write_data(None, 'genericOutput.csv', Sky.gridded_signal)
+  # optimize_params()
+  optimize_radius()
   # analyze('optimize_bins_5bins.csv', '../data/Training_halos.csv')
