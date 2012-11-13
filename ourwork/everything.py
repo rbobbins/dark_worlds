@@ -109,9 +109,10 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}
 
 
 if __name__ == "__main__":
-  # skies = objectify_data(test=False)
+  skies = objectify_data(test=False)
   # skies[211].plot(True)
-  # write_data(None, 'genericOutput.csv', Sky.gridded_signal)
+  write_data(skies, 'genericOutput.csv', Sky.gridded_signal)
   # optimize_bins()
-  optimize_radius()
-  # analyze('optimize_bins_5bins.csv', '../data/Training_halos.csv')
+  # optimize_radius()
+  m = analyze('genericOutput.csv', '../data/Training_halos.csv')
+  print m

@@ -112,7 +112,7 @@ class Sky:
 
   def gridded_signal(self, nbin=25, radius=560, radius_weight=0):
     position_halo = [(0,0), (0,0), (0,0)]
-    nhalo = 1
+    nhalo = 3
 
     (bin_x0, bin_y0, average_tan_force) = self.gridded_signal_map(nbin, radius, radius_weight)
 
@@ -121,11 +121,16 @@ class Sky:
                                                #which should be the centre
                                                #of one of the halos
     index=index[::-1] #Reverse the array so the largest is first
-    for n in xrange(nhalo):
-      x = np.where(average_tan_force == index[n])[0][0] * (bin_x0[1] - bin_x0[0])
-      y = np.where(average_tan_force == index[n])[1][0] * (bin_x0[1] - bin_x0[0])
-      position_halo[n] = (x, y)
+    std = np.std(index)
 
+    for n in xrange(nhalo):
+      if (index[n] > index[0]-std):
+        x = np.where(average_tan_force == index[n])[0][0] * (bin_x0[1] - bin_x0[0])[0]
+        y = np.where(average_tan_force == index[n])[1][0] * (bin_x0[1] - bin_x0[0])[0]
+        position_halo[n] = (x, y)
+
+
+    
     return position_halo
 
   def max_likelihood(self, nbin=15):
