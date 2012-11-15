@@ -19,7 +19,7 @@ def file_len(fname):
       pass
   return i + 1
 
-def objectify_data(test=True):
+def objectify_data(test=True, sky_range=None):
   if test:
     n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
   else:
@@ -27,9 +27,12 @@ def objectify_data(test=True):
     x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', \
                                         delimiter=',', unpack=True, usecols=(4,5,6,7,8,9),skiprows=1)
   
+  if sky_range == None:
+    sky_range = range(n_skies)
+
   res = []
   
-  for k in xrange(n_skies):
+  for k in sky_range:
     if test:
       sky = Sky()
     else:
@@ -109,8 +112,8 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}
 
 
 if __name__ == "__main__":
-  skies = objectify_data(test=False)
-  skies[215].plot(with_predictions=True)
+  skies = objectify_data(test=False, sky_range=[216])
+  skies[0].plot(with_predictions=True)
   # skies[211].plot(True)
   # for nbins in [10, 20, 50, 100]:
   #   for radius in [0, 100, 200, 300, 400]:
