@@ -26,6 +26,7 @@ class Sky:
     self.galaxies = []
     self.predictions = [(0, 0), (0, 0), (0, 0)]
     self.actual = [halo1, halo2, halo3]
+  
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
@@ -35,7 +36,6 @@ class Sky:
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
-  def plot(self, with_predictions=False):
   def plot(self):
     fig = figure()
     ax = fig.add_subplot(111, aspect='equal')
@@ -60,12 +60,43 @@ class Sky:
         tq.append(t)
         if max_e<t:
           max_e = t
-          coord = (x_r,y_r)
-    tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-    x_p, y_p = coord
+          x1, y1 = x_r, y_r
 
+
+    #----- test
+    max_e_halo2 = 0.0
+    tq2 = []
+    for iy, y_r in enumerate(y_r_range):
+      for ix, x_r in enumerate(x_r_range):
+        # r = np.sqrt((x_r - x1)**2 + (y_r - y1)**2 ) #distance from predicted halo 1
+        # E = 1.0 / r #force of halo1 on this point, scaled by average force
+        
+        point_to_h1 = np.array([x1 - x_r, y1 - y_r])
+        point_to_h2 = np.array([0, 0])
+
+        f = tq[iy * len(x_r_range) + ix]
+        force_due_to_h1 = np.dot(point_to_h1, point_to_h2)/f
+        
+
+        t = self.e_tang(x_r,y_r)
+        # print t, E
+        t = t - force_due_to_h1
+        print t
+        # t = t - f #force on point, minus force of halo 1
+        # print t
+        tq2.append(t)
+        
+        if max_e_halo2 < t:
+          max_e_halo2 = t
+          x2, y2 = x_r, y_r
+
+    #------ end test
+    tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
 
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+    
+    plt.plot(x1, y1, marker='o', markersize=10, color='black')
+    plt.plot(x2, y2, marker='o', markersize=10, color='blue')
     plt.contourf(x_rs, y_rs, tq)
    
     show()
