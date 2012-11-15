@@ -29,41 +29,56 @@ class Sky:
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
+  def plot_galaxies(self):
+    for gal in self.galaxies:
+      e = Ellipse((gal.x, gal.y), gal.a, gal.b, angle=gal.theta, linewidth=2, fill=True)
+      ax.add_artist(e)
+      e.set_clip_box(ax.bbox)
 
   def plot(self, with_predictions=False):
+  def plot(self):
     fig = figure()
     ax = fig.add_subplot(111, aspect='equal')
 
-    # for gal in self.galaxies:
-    #   e = Ellipse((gal.x, gal.y), gal.a, gal.b, angle=gal.theta, linewidth=2, fill=True)
-    #   ax.add_artist(e)
-    #   e.set_clip_box(ax.bbox)
+    self.plot_galaxies
 
     for i in xrange(3):
       if self.actual[i] != None:
         plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color='black')
 
-    if (with_predictions):
-      max_e = 0.0
-      tq = []
+    # if (with_predictions):
+    max_e = 0.0
+    tq = []
 
-      x_r_range = range(0,4200,5)
-      y_r_range = range(0,4200,5)
-      for y_r in x_r_range:
-        for x_r in y_r_range:
-          t = self.e_tang(x_r,y_r) 
-          tq.append(t)
-          if max_e<t:
-            max_e = t
-            coord = (x_r,y_r)
-      tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-      x_p, y_p = coord
+    x_r_range = range(0,4200,100)
+    y_r_range = range(0,4200,100)
+    
+    #predicts the first halo
+    for y_r in y_r_range:
+      for x_r in x_r_range:
+        t = self.e_tang(x_r,y_r) 
+        tq.append(t)
+        if max_e<t:
+          max_e = t
+          coord = (x_r,y_r)
+    tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
+    x_p, y_p = coord
 
-      print tq
-      x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
-      plt.contourf(x_rs, y_rs, tq)
+
+    x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+    plt.contourf(x_rs, y_rs, tq)
    
     show()
+
+  def e_tang(self, pred_x, pred_y):
+    x = np.array([galaxy.x for galaxy in self.galaxies])
+    y = np.array([galaxy.y for galaxy in self.galaxies])
+    e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
+    e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
+    
+    theta = np.arctan((y - pred_y)/(x - pred_x))
+    e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
+    return e_tang.mean()
 
   def gridded_signal_map(self, nbin=42, radius=200, radius_weight=0.0):
     image_size=4200.0       #Overall size of my image
@@ -111,17 +126,6 @@ class Sky:
 
     average_tan_force = radius_weight*average_radius_tan_force + average_bin_tan_force
     return (bin_x0, bin_y0, average_tan_force)
-
-  def e_tang(self, pred_x, pred_y):
-    # theta = np.arctan()
-    x = np.array([galaxy.x for galaxy in self.galaxies])
-    y = np.array([galaxy.y for galaxy in self.galaxies])
-    e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
-    e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
-    
-    theta = np.arctan((y - pred_y)/(x - pred_x))
-    e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
-    return e_tang.mean()
 
   def gridded_signal(self, nbin=42, radius=300, radius_weight=0.5):
     position_halo = [(0,0), (0,0), (0,0)]
