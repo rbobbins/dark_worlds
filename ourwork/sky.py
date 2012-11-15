@@ -41,26 +41,27 @@ class Sky:
 
     for i in xrange(3):
       if self.actual[i] != None:
-        plt.plot(self.actual[i][0]/100.0, 42-self.actual[i][1]/100.0, marker='*', markersize=20, color='black')
+        plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color='black')
 
     if (with_predictions):
       max_e = 0.0
       tq = []
 
-      for y_r in range(0,4200,100):
-        for x_r in range(0,4200,100):
+      x_r_range = range(0,4200,5)
+      y_r_range = range(0,4200,5)
+      for y_r in x_r_range:
+        for x_r in y_r_range:
           t = self.e_tang(x_r,y_r) 
           tq.append(t)
           if max_e<t:
             max_e = t
             coord = (x_r,y_r)
-      tq = np.array(tq).reshape((42,42))
-      # tq = tq[::-1]
+      tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
       x_p, y_p = coord
 
       print tq
-      plt.contourf(tq)
-      # plt.imshow(tq, interpolation="nearest")
+      x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+      plt.contourf(x_rs, y_rs, tq)
    
     show()
 
