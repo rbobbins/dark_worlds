@@ -109,16 +109,3 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}
       halostr.append(pos_halo[n][1])
 
     c.writerow(halostr)
-
-
-if __name__ == "__main__":
-  skies = objectify_data(test=False, sky_range=[216])
-  skies[0].plot(with_predictions=True)
-  # skies[211].plot(True)
-  # for nbins in [10, 20, 50, 100]:
-  #   for radius in [0, 100, 200, 300, 400]:
-  #     for radius_weight in [0, 0.1, 0.2, 0.5, 1]:
-  #       opts = {"nbin": nbins, "radius": radius, "radius_weight": radius_weight}
-  #       write_data(skies, 'genericOutput.csv', Sky.gridded_signal, opts)
-  #       m = analyze('genericOutput.csv', '../data/Training_halos.csv')
-  #       print m, nbins, radius, radius_weight
