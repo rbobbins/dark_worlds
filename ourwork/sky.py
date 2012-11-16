@@ -69,7 +69,7 @@ class Sky:
 
 
     #----- test
-    x2, y2 = None, None
+    x2, y2 = 0.0, 0.0
     if self.actual[1] != None:
       max_e_halo2 = 0.0
       tq2 = []
@@ -84,9 +84,8 @@ class Sky:
             max_e_halo2 = t
             x2, y2 = x_r, y_r
 
-    x3, y3 = None, None
+    x3, y3 = 0.0, 0.0
     if self.actual[2] != None:
-      # print "rec"
       max_e_halo3 = 0.0
       tq3 = []
       for iy, y_r in enumerate(y_r_range):
@@ -94,17 +93,17 @@ class Sky:
           if x1 == x_r and y1 == y_r: tq3.append(0); continue
           if x2 == x_r and y2 == y_r: tq3.append(0); continue
 
-          t = self.e_tang(x_r, y_r, [(x1, y1), (x2, y2)])
+          t = self.e_tang(x_r, y_r, [(x2, y2), (x1, y1)])
           tq3.append(t)
           
           if max_e_halo3 < t:
             max_e_halo3 = t
             x3, y3 = x_r, y_r
-
-    #------ end test
+    # print x3, y3
+    # #------ end test
     tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
     tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
-    tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
+    # tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
 
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
@@ -112,9 +111,11 @@ class Sky:
     if x2: plt.plot(x2, y2, marker='o', markersize=10, color='blue')
     if x3: plt.plot(x3, y3, marker='o', markersize=10, color='pink')
     # plt.contourf(x_rs, y_rs, tq)
-    plt.contourf(x_rs, y_rs, tq2)
+    plt.contourf(x_rs, y_rs, tq)
    
-    show()
+    # show()
+
+    return [(x1, y1), (x2, y2), (x3, y3)]
 
   def e_tang(self, pred_x, pred_y, actual_halos=[]):
     x = np.array([galaxy.x for galaxy in self.galaxies])
