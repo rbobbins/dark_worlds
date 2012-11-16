@@ -27,6 +27,9 @@ class Sky:
     self.predictions = [(0, 0), (0, 0), (0, 0)]
     self.actual = [halo1, halo2, halo3]
   
+  def n_halos(self):
+    # return len(filter(None, self.actual))
+    return sum([1 for h in self.actual if h != None])
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
