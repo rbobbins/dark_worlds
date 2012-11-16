@@ -39,6 +39,57 @@ class Sky:
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
+  def non_binned_signal(self):
+    max_e = 0.0
+    tq = []
+    x_r_range = range(0,4200,100)
+    y_r_range = range(0,4200,100)
+    #predicts the first halo
+    # x1, y1 = None, None
+    if self.actual[0] != None:
+      for y_r in y_r_range:
+        for x_r in x_r_range:
+          t = self.e_tang(x_r,y_r) 
+          tq.append(t)
+          if max_e<t:
+            max_e = t
+            p1 = x_r, y_r
+
+
+    # x2, y2 = None, None
+    p2 = None
+    if self.actual[1] != None:
+      max_e_halo2 = 0.0
+      tq2 = []
+      for iy, y_r in enumerate(y_r_range):
+        for ix, x_r in enumerate(x_r_range):
+          if p1[0] == x_r and p1[1] == y_r: tq2.append(0); continue
+
+          t = self.e_tang(x_r, y_r, [(p1[0], p1[1])])
+          tq2.append(t)
+          
+          if max_e_halo2 < t:
+            max_e_halo2 = t
+            p2 = x_r, y_r
+
+    p3 = None
+    if self.actual[2] != None:
+      max_e_halo3 = 0.0
+      tq3 = []
+      for iy, y_r in enumerate(y_r_range):
+        for ix, x_r in enumerate(x_r_range):
+          if p1[0] == x_r and p1[1] == y_r: tq3.append(0); continue
+          if p2[0] == x_r and p2[1] == y_r: tq3.append(0); continue
+
+          t = self.e_tang(x_r, y_r, [(p1[0], p1[1]), (p2[0], p2[1])])
+          tq3.append(t)
+          
+          if max_e_halo3 < t:
+            max_e_halo3 = t
+            p3 = x_r, y_r
+
+    return [p1, p2, p3], tq
+
   def plot(self):
     fig = figure()
     ax = fig.add_subplot(111, aspect='equal')
@@ -49,73 +100,28 @@ class Sky:
       if self.actual[i] != None:
         plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color='black')
 
-    # if (with_predictions):
-    max_e = 0.0
-    tq = []
 
     x_r_range = range(0,4200,100)
     y_r_range = range(0,4200,100)
     
-    #predicts the first halo
-    x1, y1 = None, None
-    if self.actual[0] != None:
-      for y_r in y_r_range:
-        for x_r in x_r_range:
-          t = self.e_tang(x_r,y_r) 
-          tq.append(t)
-          if max_e<t:
-            max_e = t
-            x1, y1 = x_r, y_r
-
-
-    #----- test
-    x2, y2 = 0.0, 0.0
-    if self.actual[1] != None:
-      max_e_halo2 = 0.0
-      tq2 = []
-      for iy, y_r in enumerate(y_r_range):
-        for ix, x_r in enumerate(x_r_range):
-          if x1 == x_r and y1 == y_r: tq2.append(0); continue
-
-          t = self.e_tang(x_r, y_r, [(x1, y1)])
-          tq2.append(t)
-          
-          if max_e_halo2 < t:
-            max_e_halo2 = t
-            x2, y2 = x_r, y_r
-
-    x3, y3 = 0.0, 0.0
-    if self.actual[2] != None:
-      max_e_halo3 = 0.0
-      tq3 = []
-      for iy, y_r in enumerate(y_r_range):
-        for ix, x_r in enumerate(x_r_range):
-          if x1 == x_r and y1 == y_r: tq3.append(0); continue
-          if x2 == x_r and y2 == y_r: tq3.append(0); continue
-
-          t = self.e_tang(x_r, y_r, [(x2, y2), (x1, y1)])
-          tq3.append(t)
-          
-          if max_e_halo3 < t:
-            max_e_halo3 = t
-            x3, y3 = x_r, y_r
-    # print x3, y3
-    # #------ end test
+    points, tq = self.non_binned_signal()
+    p1, p2, p3 = points
+ 
     tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-    tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
+    # tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
     # tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
 
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
-    if x1: plt.plot(x1, y1, marker='o', markersize=10, color='black')
-    if x2: plt.plot(x2, y2, marker='o', markersize=10, color='blue')
-    if x3: plt.plot(x3, y3, marker='o', markersize=10, color='pink')
+    if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
+    if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
+    if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
     # plt.contourf(x_rs, y_rs, tq)
     plt.contourf(x_rs, y_rs, tq)
    
-    # show()
+    show()
 
-    return [(x1, y1), (x2, y2), (x3, y3)]
+    return points
 
   def e_tang(self, pred_x, pred_y, actual_halos=[]):
     x = np.array([galaxy.x for galaxy in self.galaxies])
