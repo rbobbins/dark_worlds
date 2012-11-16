@@ -108,8 +108,9 @@ class Sky:
     if x1: plt.plot(x1, y1, marker='o', markersize=10, color='black')
     if x2: plt.plot(x2, y2, marker='o', markersize=10, color='blue')
     if x3: plt.plot(x3, y3, marker='o', markersize=10, color='pink')
-    # plt.contourf(x_rs, y_rs, tq)
-    plt.contourf(x_rs, y_rs, tq2)
+    plt.contourf(x_rs, y_rs, tq)
+    # plt.contourf(x_rs, y_rs, tq2)
+    # plt.contourf(x_rs, y_rs, tq3)
    
     show()
 
@@ -162,7 +163,8 @@ class Sky:
         bin_x0[i,j]=i*binwidth+binwidth/2. #proposed x position of the halo
         bin_y0[i,j]=j*binwidth+binwidth/2. #proposed y position of the halo
     
-        tangential_force = self.e_tang(bin_x0, bin_y0)
+        theta = np.arctan((y - bin_x0[i,j])/(x - bin_y0[i,j]))
+        tangential_force = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
 
         tangential_force_in_bin = tangential_force[ (x >= i*binwidth) & \
                                                     (x < (i+1)*binwidth) & \
