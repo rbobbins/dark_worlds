@@ -147,7 +147,48 @@ def dist_between_halos():
 
 
   # histogram2 = np.histogram(np.array(ds_3halos), density=True)
+
+def analyze_ratio():
+  """
+  TO USE: Comment out the line in sky.py > Sky.non_binned_signal
+  which says "if self.actual[1] != None:"
+
+  Analyzes the ratio between the predicted first signal, 
+  and predicted second signal. 
+
+  Thought it could be used to determine the number of halos in
+  a sky. Not possible, because the results were not expected
+
+  Hypothesis: If there's only 1 halo, there will be an order
+  of magnitude difference btwn the signals. If there are 2 halos,
+  the predicted signals will be within an order of magnitude.
+
+  Result: This was not the case. If there's only 1 actual halo, it's
+  second signal will be close to the first
+  """
+  skies = objectify_data(test=False, sky_range=range(0, 200))
+  ratios1, ratios2 = [], []
+  for sky in skies:
+    points, tq1, tq2, tq3 = sky.non_binned_signal()
+    sig1 = max(tq1)
+    sig2 = max(tq2)
+    ratio = (sig2 * 1.0/sig1)
+    print ratio
+    if sky.n_halos() == 1:
+      ratios1.append(ratio)
+    elif sky.n_halos() == 2:
+      ratios2.append(ratio)
   
+  counts, bin_edges = np.histogram(np.array(ratios1), bins=100, density=False)
+  cdf1 = np.cumsum(counts) * 1.0 / sum(counts)
+
+  counts, bin_edges = np.histogram(np.array(ratios2), bins=100, density=False)
+  cdf2 = np.cumsum(counts) * 1.0 / sum(counts)
+  
+  plt.plot(bin_edges[1:], cdf1, color='red')
+  plt.plot(bin_edges[1:], cdf2, color='blue')
+  plt.show()
+
 def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}):
   if skies == None:
     skies = objectify_data()
@@ -162,7 +203,11 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}
     # pos_halo = skies[k].max_likelihood()
     pos_halo = method(skies[k], **opts)
     for n in xrange(3):
-      halostr.append(pos_halo[n][0])
-      halostr.append(pos_halo[n][1])
+      if pos_halo[n] == None:
+        halostr.append('0.0')
+        halostr.append('0.0')
+      else:
+        halostr.append(pos_halo[n][0])
+        halostr.append(pos_halo[n][1])
 
     c.writerow(halostr)
