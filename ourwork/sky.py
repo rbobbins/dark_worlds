@@ -133,17 +133,15 @@ class Sky:
     theta = np.arctan((y - pred_y)/(x - pred_x))
     e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
 
-    for actual_halo1 in actual_halos:
-      x_h, y_h = actual_halo1
-      vect_to_h1_x = x - x_h
-      vect_to_h1_y = y - y_h
-      vect_to_pred_x = x - pred_x
-      vect_to_pred_y = y - pred_y
+    for halo in actual_halos:
+      x_h, y_h = halo
+      vect_to_halo = (x - x_h, y - y_h)
+      vect_to_pred = (x - pred_x, y - pred_y)
 
       try:
-        dot_prod = (vect_to_h1_x * vect_to_pred_x) + (vect_to_h1_y * vect_to_pred_y)
-        mag_vect_to_h1 = np.sqrt(vect_to_h1_x**2 + vect_to_h1_y**2)
-        mag_vect_to_pred = np.sqrt(vect_to_pred_x**2 + vect_to_pred_y**2)
+        dot_prod = (vect_to_halo[0] * vect_to_pred[0]) + (vect_to_halo[1] * vect_to_pred[1])
+        mag_vect_to_h1 = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
+        mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
         cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_h1)
         e_tang = e_tang * (1 - cos_phi)
       except:
