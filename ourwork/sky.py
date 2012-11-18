@@ -26,6 +26,7 @@ class Sky:
     self.galaxies = []
     self.predictions = [(0, 0), (0, 0), (0, 0)]
     self.actual = [halo1, halo2, halo3]
+    # self.ratios
   
   def n_halos(self):
     # return len(filter(None, self.actual))
@@ -33,7 +34,9 @@ class Sky:
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
-  def plot_galaxies(self):
+  def plot_galaxies(self, ax):
+    # fig = figure() 
+    # ax = fig.add_subplot(111, aspect='equal')
     for gal in self.galaxies:
       e = Ellipse((gal.x, gal.y), gal.a, gal.b, angle=gal.theta, linewidth=2, fill=True)
       ax.add_artist(e)
@@ -55,9 +58,8 @@ class Sky:
             max_e = t
             p1 = x_r, y_r
 
-
     # x2, y2 = None, None
-    p2 = None
+    p2, tq2 = None, None
     if self.actual[1] != None:
       max_e_halo2 = 0.0
       tq2 = []
@@ -72,7 +74,7 @@ class Sky:
             max_e_halo2 = t
             p2 = x_r, y_r
 
-    p3 = None
+    p3, tq3 = None, None
     if self.actual[2] != None:
       max_e_halo3 = 0.0
       tq3 = []
@@ -83,44 +85,54 @@ class Sky:
 
           t = self.e_tang(x_r, y_r, [(p1[0], p1[1]), (p2[0], p2[1])])
           tq3.append(t)
-          
+
           if max_e_halo3 < t:
             max_e_halo3 = t
             p3 = x_r, y_r
 
-    return [p1, p2, p3], tq
+    # if self.actual[2] != None:
+    #   max_e_halo3 = 0.0
+    #   tq3 = np.array(tq2) + np.array(tq)
+    #   for iy, y_r in enumerate(y_r_range):
+    #     for ix, x_r in enumerate(x_r_range):
+    #       i = ix * len(y_r_range) + iy
+          
+    #       if max_e_halo3 < tq3[i]:
+    #         max_e_halo3 = t
+    #         p3 = x_r, y_r
+
+    return [p1, p2, p3], tq, tq2, tq3
 
   def plot(self):
-    fig = figure()
+    fig = figure() 
     ax = fig.add_subplot(111, aspect='equal')
 
-    self.plot_galaxies
-
-    for i in xrange(3):
+    # self.plot_galaxies(ax)
+    
+    for i, color in enumerate(['black', 'blue', 'pink']):
       if self.actual[i] != None:
-        plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color='black')
-
+        plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color=color)
 
     x_r_range = range(0,4200,100)
     y_r_range = range(0,4200,100)
     
-    points, tq = self.non_binned_signal()
-    p1, p2, p3 = points
+    points, tq, tq2, tq3 = self.non_binned_signal()
+    # p1, p2, p3 = points
  
-    tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
+    # # tq = tq - tq2
+    # tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
     # tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
     # tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
-
-    x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+    # # tq = (tq + tq2)*-1
+    # x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
-    if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
-    if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
-    if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
-    plt.contourf(x_rs, y_rs, tq)
-    # plt.contourf(x_rs, y_rs, tq2)
-    # plt.contourf(x_rs, y_rs, tq3)
+    # if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
+    # if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
+    # if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
+    # # plt.contourf(x_rs, y_rs, tq)
+    # plt.contourf(x_rs, y_rs, tq3, 20)
    
-    show()
+    # show()
 
     return points
 
@@ -171,8 +183,7 @@ class Sky:
         bin_x0[i,j]=i*binwidth+binwidth/2. #proposed x position of the halo
         bin_y0[i,j]=j*binwidth+binwidth/2. #proposed y position of the halo
     
-        theta = np.arctan((y - bin_x0[i,j])/(x - bin_y0[i,j]))
-        tangential_force = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
+        tangential_force = self.e_tang(bin_x0, bin_y0)
 
         tangential_force_in_bin = tangential_force[ (x >= i*binwidth) & \
                                                     (x < (i+1)*binwidth) & \
