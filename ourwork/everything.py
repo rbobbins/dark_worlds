@@ -57,46 +57,6 @@ def objectify_data(test=True, sky_range=None):
     res.append(sky)
   return res
 
-# def optimize_bins(min_bins=1, max_bins=30):
-#   """
-#   Iterates over different values of nbins to find the optimum
-#   number of bins for the gridded_signal method.
-#   """
-#   skies = objectify_data(test=False)
-
-#   results = {}
-#   for n in range(min_bins, max_bins):
-#     output_file = "optimize_bins_%ibins.csv" % n
-    
-#     write_data(skies, output_file, Sky.gridded_signal, {"nbin": n})
-#     metric = analyze(output_file, '../data/Training_halos.csv')
-#     results[n] = metric
-
-#     os.remove(output_file)
-
-#   for k, v in results.items():
-#     print k, v
-
-# def optimize_radius(min_radius = 200, max_radius = 800):
-#   """
-#   Iterates over different values of nbins to find the optimum
-#   number of bins for the gridded_signal method.
-#   """
-#   skies = objectify_data(test=False)
-
-#   results = {}
-#   for n in range(min_radius, max_radius, 100):
-#     output_file = "optimize_radius_%ir.csv" % n
-    
-#     write_data(skies, output_file, Sky.gridded_signal, {"radius": n})
-#     metric = analyze(output_file, '../data/Training_halos.csv')
-#     results[n] = metric
-
-#     os.remove(output_file)
-
-#   for k, v in results.items():
-#     print k, v
-
 def euclidean_distance(point1, point2):
   return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
