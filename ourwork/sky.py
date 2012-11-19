@@ -3,7 +3,6 @@ from matplotlib.patches import Ellipse
 import numpy as np
 from pylab import figure, show, rand
 
-
 class Galaxy:
   def __init__(self, x, y, e1, e2):
     self.x = x
@@ -26,11 +25,10 @@ class Sky:
     self.galaxies = []
     self.predictions = [(0, 0), (0, 0), (0, 0)]
     self.actual = [halo1, halo2, halo3]
-    # self.ratios
   
   def n_halos(self):
-    # return len(filter(None, self.actual))
     return sum([1 for h in self.actual if h != None])
+  
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
@@ -42,11 +40,11 @@ class Sky:
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
-  def non_binned_signal(self):
+  def non_binned_signal(self, to_file=False):
     max_e = 0.0
     tq = []
-    x_r_range = range(0,4200,100)
-    y_r_range = range(0,4200,100)
+    x_r_range = range(0,4200,70)
+    y_r_range = range(0,4200,70)
     #predicts the first halo
     # x1, y1 = None, None
     if self.actual[0] != None:
@@ -61,13 +59,14 @@ class Sky:
     # x2, y2 = None, None
     p2, tq2 = None, None
     if self.actual[1] != None:
+      # print "going through point 2"
       max_e_halo2 = 0.0
       tq2 = []
       for iy, y_r in enumerate(y_r_range):
         for ix, x_r in enumerate(x_r_range):
           if p1[0] == x_r and p1[1] == y_r: tq2.append(0); continue
 
-          t = self.e_tang(x_r, y_r, [(p1[0], p1[1])])
+          t = self.e_tang(x_r, y_r, [p1])
           tq2.append(t)
           
           if max_e_halo2 < t:
@@ -83,56 +82,49 @@ class Sky:
           if p1[0] == x_r and p1[1] == y_r: tq3.append(0); continue
           if p2[0] == x_r and p2[1] == y_r: tq3.append(0); continue
 
-          t = self.e_tang(x_r, y_r, [(p1[0], p1[1]), (p2[0], p2[1])])
+          i = ix * len(y_r_range) + iy
+
+          t = self.e_tang(x_r, y_r, [p1, p2])
           tq3.append(t)
 
           if max_e_halo3 < t:
             max_e_halo3 = t
             p3 = x_r, y_r
 
-    # if self.actual[2] != None:
-    #   max_e_halo3 = 0.0
-    #   tq3 = np.array(tq2) + np.array(tq)
-    #   for iy, y_r in enumerate(y_r_range):
-    #     for ix, x_r in enumerate(x_r_range):
-    #       i = ix * len(y_r_range) + iy
-          
-    #       if max_e_halo3 < tq3[i]:
-    #         max_e_halo3 = t
-    #         p3 = x_r, y_r
-
-    return [p1, p2, p3], tq, tq2, tq3
+    if to_file == True:
+      return p1, p2, p3
+    else:
+      return [p1, p2, p3], tq, tq2, tq3
 
   def plot(self):
     fig = figure() 
     ax = fig.add_subplot(111, aspect='equal')
 
-    # self.plot_galaxies(ax)
-    
+    self.plot_galaxies(ax)
     for i, color in enumerate(['black', 'blue', 'pink']):
       if self.actual[i] != None:
         plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color=color)
 
-    x_r_range = range(0,4200,100)
-    y_r_range = range(0,4200,100)
+    x_r_range = range(0,4200,70)
+    y_r_range = range(0,4200,70)
     
-    points, tq, tq2, tq3 = self.non_binned_signal()
-    # p1, p2, p3 = points
+    points, tq1, tq2, tq3 = self.non_binned_signal()
+    p1, p2, p3 = points
  
-    # # tq = tq - tq2
-    # tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-    # tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
-    # tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
-    # # tq = (tq + tq2)*-1
-    # x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+    #plot map of signal
+    if tq1 != None: tq1 = np.array(tq1).reshape((len(x_r_range),len(y_r_range)))
+    if tq2 != None: tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
+    if tq3 != None: tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
+    tq2 = (tq1 + tq2)
+    x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
+    plt.contourf(x_rs, y_rs, tq3, 20)
     
-    # if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
-    # if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
-    # if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
-    # # plt.contourf(x_rs, y_rs, tq)
-    # plt.contourf(x_rs, y_rs, tq3, 20)
+    #plot predicted positions
+    if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
+    if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
+    if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
    
-    # show()
+    show()
 
     return points
 
@@ -145,19 +137,56 @@ class Sky:
     theta = np.arctan((y - pred_y)/(x - pred_x))
     e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
 
-    for halo in actual_halos:
-      x_h, y_h = halo
+    if len(actual_halos) == 1:
+      x_h, y_h = actual_halos[0]
       vect_to_halo = (x - x_h, y - y_h)
       vect_to_pred = (x - pred_x, y - pred_y)
 
+      #find the projection of the vector to halo1 on the vector to 
+      #(potential) halo 2.
       try:
-        dot_prod = (vect_to_halo[0] * vect_to_pred[0]) + (vect_to_halo[1] * vect_to_pred[1])
-        mag_vect_to_h1 = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
+        dot_prod = (vect_to_halo[0] * vect_to_pred[0] + vect_to_halo[1] * vect_to_pred[1])
+        mag_vect_to_halo = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
         mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
-        cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_h1)
+
+        cos_phi = dot_prod / (mag_vect_to_pred * mag_vect_to_halo)
         e_tang = e_tang * (1 - cos_phi)
       except:
         return 0
+    
+    elif len(actual_halos) == 2:
+      x_h1, y_h1 = actual_halos[0]
+      x_h2, y_h2 = actual_halos[1]
+      # vect_to_halos = (x - (x_h1 + x_h2), y - (y_h1 + y_h2))
+      # vect_to_halo1 = (x - x_h1, y - y_h1)
+      vect_to_halo2 = (x - x_h2, y - y_h2)
+      # vect_to_halos = (x - x_h1 )
+      vect_to_halos = vect_to_halo2
+      # vect_to_halos = (vect_to_halo1[0] + vect_to_halo2[0], vect_to_halo1[1] + vect_to_halo2[1])
+      vect_to_pred = (x - pred_x, y - pred_y)
+
+      try:
+        dot_prod = (vect_to_halos[0] * vect_to_pred[0] + vect_to_halos[1] * vect_to_pred[1])
+        mag_vect_to_halos = np.sqrt(vect_to_halos[0]**2 + vect_to_halos[1]**2)
+        mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
+        cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_halos)
+        e_tang = e_tang * (1 - cos_phi)
+      except:
+        return 0
+
+    # for halo in actual_halos:
+    #   x_h, y_h = halo
+    #   vect_to_halo = (x - x_h, y - y_h)
+    #   vect_to_pred = (x - pred_x, y - pred_y)
+
+    #   try:
+    #     dot_prod = (vect_to_halo[0] * vect_to_pred[0]) + (vect_to_halo[1] * vect_to_pred[1])
+    #     mag_vect_to_h1 = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
+    #     mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
+    #     cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_h1)
+    #     e_tang = e_tang * (1 - cos_phi)
+    #   except:
+    #     return 0
 
     return e_tang.mean()
 
