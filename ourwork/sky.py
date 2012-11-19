@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse 
 import numpy as np
 from pylab import figure, show, rand
+import random
 
 class Galaxy:
   def __init__(self, x, y, e1, e2):
@@ -40,61 +41,35 @@ class Sky:
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
-  def non_binned_signal(self, to_file=False):
-    max_e = 0.0
-    tq = []
+  def non_binned_signal(self, to_file=False, nhalos=0):
+    if nhalos == 0:
+      nhalos = random.choice([1,2,3])
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
-    #predicts the first halo
-    # x1, y1 = None, None
-    if self.actual[0] != None:
+    
+    points = [None, None, None]
+    signal_maps = [None, None, None]
+
+    for i in range(nhalos):
+      tq = []
+      max_e = 0.0
       for y_r in y_r_range:
         for x_r in x_r_range:
-          t = self.e_tang(x_r,y_r) 
+          if points[0] != None and points[0][0] == x_r and points[0][1] == y_r: tq.append(0); continue
+          if points[1] != None and points[1][0] == x_r and points[1][1] == y_r: tq.append(0); continue
+          t = self.e_tang(x_r, y_r, points) 
           tq.append(t)
+          
           if max_e<t:
             max_e = t
-            p1 = x_r, y_r
-
-    # x2, y2 = None, None
-    p2, tq2 = None, None
-    if self.actual[1] != None:
-      # print "going through point 2"
-      max_e_halo2 = 0.0
-      tq2 = []
-      for iy, y_r in enumerate(y_r_range):
-        for ix, x_r in enumerate(x_r_range):
-          if p1[0] == x_r and p1[1] == y_r: tq2.append(0); continue
-
-          t = self.e_tang(x_r, y_r, [p1])
-          tq2.append(t)
-          
-          if max_e_halo2 < t:
-            max_e_halo2 = t
-            p2 = x_r, y_r
-
-    p3, tq3 = None, None
-    if self.actual[2] != None:
-      max_e_halo3 = 0.0
-      tq3 = []
-      for iy, y_r in enumerate(y_r_range):
-        for ix, x_r in enumerate(x_r_range):
-          if p1[0] == x_r and p1[1] == y_r: tq3.append(0); continue
-          if p2[0] == x_r and p2[1] == y_r: tq3.append(0); continue
-
-          i = ix * len(y_r_range) + iy
-
-          t = self.e_tang(x_r, y_r, [p1, p2])
-          tq3.append(t)
-
-          if max_e_halo3 < t:
-            max_e_halo3 = t
-            p3 = x_r, y_r
+            p = x_r, y_r
+      points[i] = p
+      signal_maps[i] = tq
 
     if to_file == True:
-      return p1, p2, p3
+      return points
     else:
-      return [p1, p2, p3], tq, tq2, tq3
+      return points, signal_maps
 
   def plot(self):
     fig = figure() 
@@ -108,16 +83,17 @@ class Sky:
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     
-    points, tq1, tq2, tq3 = self.non_binned_signal()
+    points, tqs = self.non_binned_signal()
     p1, p2, p3 = points
+    tq1, tq2, tq3 = tqs
  
     #plot map of signal
     if tq1 != None: tq1 = np.array(tq1).reshape((len(x_r_range),len(y_r_range)))
     if tq2 != None: tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
     if tq3 != None: tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
-    tq2 = (tq1 + tq2)
+    # tq2 = (tq1 + tq2)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
-    plt.contourf(x_rs, y_rs, tq3, 20)
+    plt.contourf(x_rs, y_rs, tq1, 20)
     
     #plot predicted positions
     if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
