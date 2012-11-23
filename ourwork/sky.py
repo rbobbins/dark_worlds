@@ -4,6 +4,13 @@ import numpy as np
 from pylab import figure, show, rand
 import random
 
+class Halo:
+  def __init__(self, x, y, signal=None):
+    self.x = x
+    self.y = y
+    self.signal = signal
+
+
 class Galaxy:
   def __init__(self, x, y, e1, e2):
     self.x = x
@@ -24,18 +31,19 @@ class Galaxy:
 class Sky:
   def __init__(self, halo1=None, halo2=None, halo3=None):
     self.galaxies = []
-    self.predictions = [(0, 0), (0, 0), (0, 0)]
+    self.predictions = [None, None, None]
     self.actual = [halo1, halo2, halo3]
   
   def n_halos(self):
     return sum([1 for h in self.actual if h != None])
   
+  def formatted_predictions():
+    return [((halo.x, halo.y) if halo else (0.0, 0.0)) for halo in self.predictions]
+
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
   def plot_galaxies(self, ax):
-    # fig = figure() 
-    # ax = fig.add_subplot(111, aspect='equal')
     for gal in self.galaxies:
       e = Ellipse((gal.x, gal.y), gal.a, gal.b, angle=gal.theta, linewidth=2, fill=True)
       ax.add_artist(e)
@@ -47,29 +55,33 @@ class Sky:
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     
-    points = [None, None, None]
+    halos = [None, None, None]
     signal_maps = [None, None, None]
 
     for i in range(nhalos):
       tq = []
       max_e = 0.0
+      pred_x = 0.0
+      pred_y = 0.0
       for y_r in y_r_range:
         for x_r in x_r_range:
-          if points[0] != None and points[0][0] == x_r and points[0][1] == y_r: tq.append(0); continue
-          if points[1] != None and points[1][0] == x_r and points[1][1] == y_r: tq.append(0); continue
-          t = self.e_tang(x_r, y_r, points) 
+          if halos[0] != None and halos[0].x == x_r and halos[0].y == y_r: tq.append(0); continue
+          if halos[1] != None and halos[1].x == x_r and halos[1].y == y_r: tq.append(0); continue
+          t = self.e_tang(x_r, y_r, halos) 
           tq.append(t)
           
           if max_e<t:
             max_e = t
-            p = x_r, y_r
-      points[i] = p
+            pred_x = x_r
+            pred_y = y_r
+      halos[i] = Halo(x=pred_x, y=pred_y, signal=max_e)
       signal_maps[i] = tq
 
     if to_file == True:
-      return points
+      return halos
     else:
-      return points, signal_maps
+      return halos, signal_maps
+
 
   def plot(self):
     fig = figure() 
@@ -78,33 +90,34 @@ class Sky:
     self.plot_galaxies(ax)
     for i, color in enumerate(['black', 'blue', 'pink']):
       if self.actual[i] != None:
-        plt.plot(self.actual[i][0], self.actual[i][1], marker='*', markersize=20, color=color)
+        plt.plot(self.actual[i].x, self.actual[i].y, marker='*', markersize=20, color=color)
 
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     
-    points, tqs = self.non_binned_signal()
-    p1, p2, p3 = points
+    halos, tqs = self.non_binned_signal()
+    halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
  
     #plot map of signal
     if tq1 != None: tq1 = np.array(tq1).reshape((len(x_r_range),len(y_r_range)))
     if tq2 != None: tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
     if tq3 != None: tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
-    # tq2 = (tq1 + tq2)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     plt.contourf(x_rs, y_rs, tq1, 20)
+    # plt.contourf(x_rs, y_rs, tq2, 20)
+    # plt.contourf(x_rs, y_rs, tq3, 20)
     
     #plot predicted positions
-    if p1: plt.plot(p1[0], p1[1], marker='o', markersize=10, color='black')
-    if p2: plt.plot(p2[0], p2[1], marker='o', markersize=10, color='blue')
-    if p3: plt.plot(p3[0], p3[1], marker='o', markersize=10, color='pink')
+    if halo1: plt.plot(halo1.x, halo1.y, marker='o', markersize=10, color='black')
+    if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
+    if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
    
     show()
+    return halos
 
-    return points
 
-  def e_tang(self, pred_x, pred_y, actual_halos=[]):
+  def e_tang(self, pred_x, pred_y, other_halos=[]):
     x = np.array([galaxy.x for galaxy in self.galaxies])
     y = np.array([galaxy.y for galaxy in self.galaxies])
     e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
@@ -113,9 +126,9 @@ class Sky:
     theta = np.arctan((y - pred_y)/(x - pred_x))
     e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
 
-    if len(actual_halos) == 1:
-      x_h, y_h = actual_halos[0]
-      vect_to_halo = (x - x_h, y - y_h)
+    if len(other_halos) == 1:
+      halo = other_halos[0]
+      vect_to_halo = (x - halo.x, y - halo.y)
       vect_to_pred = (x - pred_x, y - pred_y)
 
       #find the projection of the vector to halo1 on the vector to 
@@ -130,13 +143,13 @@ class Sky:
       except:
         return 0
     
-    elif len(actual_halos) == 2:
-      x_h1, y_h1 = actual_halos[0]
-      x_h2, y_h2 = actual_halos[1]
-      # vect_to_halos = (x - (x_h1 + x_h2), y - (y_h1 + y_h2))
-      # vect_to_halo1 = (x - x_h1, y - y_h1)
-      vect_to_halo2 = (x - x_h2, y - y_h2)
-      # vect_to_halos = (x - x_h1 )
+    elif len(other_halos) == 2:
+      halo1 = other_halos[0]
+      halo2 = other_halos[1]
+      # vect_to_halos = (x - (halo1.x + halo2.x), y - (halo1.y + halo2.y))
+      # vect_to_halo1 = (x - halo1.x, y - halo1.y)
+      vect_to_halo2 = (x - halo2.x, y - halo2.y)
+      # vect_to_halos = vect_to_halo1
       vect_to_halos = vect_to_halo2
       # vect_to_halos = (vect_to_halo1[0] + vect_to_halo2[0], vect_to_halo1[1] + vect_to_halo2[1])
       vect_to_pred = (x - pred_x, y - pred_y)
@@ -150,9 +163,8 @@ class Sky:
       except:
         return 0
 
-    # for halo in actual_halos:
-    #   x_h, y_h = halo
-    #   vect_to_halo = (x - x_h, y - y_h)
+    # for halo in other_halos:
+    #   vect_to_halo = (x - halo.x, y - halo.y)
     #   vect_to_pred = (x - pred_x, y - pred_y)
 
     #   try:
