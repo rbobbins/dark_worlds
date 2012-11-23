@@ -34,16 +34,16 @@ def objectify_data(test=True, sky_range=None):
 
   res = []
   for k in sky_range:
+    skyid = "sky%d" % k
     if test:
-      sky = Sky(number=k)
+      sky = Sky(skyid=skyid)
       data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
     else:
       hs1 = Halo(x1[k-1], y1[k-1]) if (x1[k-1] != 0.0 or y1[k-1] != 0.0) else None
       hs2 = Halo(x2[k-1], y2[k-1]) if (x2[k-1] != 0.0 or y2[k-1] != 0.0) else None
       hs3 = Halo(x3[k-1], y3[k-1]) if (x3[k-1] != 0.0 or y3[k-1] != 0.0) else None
-      sky = Sky(number=k, halo1=hs1, halo2=hs2, halo3=hs3)
+      sky = Sky(skyid=skyid, halo1=hs1, halo2=hs2, halo3=hs3)
       data_filename = '../data/Train_Skies/Training_Sky%i.csv' % k
-    
     res.append(sky)
 
     x, y, e1, e2 = np.loadtxt(data_filename, delimiter=',', unpack=True, usecols=(1,2,3,4), skiprows=1)
