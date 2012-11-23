@@ -35,11 +35,15 @@ class Sky:
     self.predictions = [None, None, None]
     self.actual = [halo1, halo2, halo3]
   
+  def formatted_output_list(self):
+    output_list = [self.skyid]
+    for halo in self.predictions:
+      output_list.append(halo.x if halo else 0.0)
+      output_list.append(halo.y if halo else 0.0)
+    return output_list
+  
   def n_halos(self):
     return sum([1 for h in self.actual if h != None])
-  
-  def formatted_predictions():
-    return [((halo.x, halo.y) if halo else (0.0, 0.0)) for halo in self.predictions]
 
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)

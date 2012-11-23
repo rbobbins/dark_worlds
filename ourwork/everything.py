@@ -149,17 +149,8 @@ def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}
   c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
   c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
   
-  for k in xrange(len(skies)):
-    halostr=['Sky'+str(k+1)]
-    # pos_halo= skies[k].gridded_signal()
-    # pos_halo = skies[k].max_likelihood()
-    pos_halo = method(skies[k], **opts)
-    for n in xrange(3):
-      if pos_halo[n] == None:
-        halostr.append('0.0')
-        halostr.append('0.0')
-      else:
-        halostr.append(pos_halo[n][0])
-        halostr.append(pos_halo[n][1])
-
-    c.writerow(halostr)
+  for sky in skies:
+    sky.predictions = method(sky, **opts)
+    sky_output = sky.formatted_output_list()
+    print sky_output
+    c.writerow(sky_output)
