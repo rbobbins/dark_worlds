@@ -29,7 +29,8 @@ class Galaxy:
 
 
 class Sky:
-  def __init__(self, halo1=None, halo2=None, halo3=None):
+  def __init__(self, number=0, halo1=None, halo2=None, halo3=None):
+    self.number = number
     self.galaxies = []
     self.predictions = [None, None, None]
     self.actual = [halo1, halo2, halo3]
@@ -86,6 +87,7 @@ class Sky:
   def plot(self):
     fig = figure() 
     ax = fig.add_subplot(111, aspect='equal')
+    plt.title("Sky #%d" % (self.number))
 
     self.plot_galaxies(ax)
     for i, color in enumerate(['black', 'blue', 'pink']):
