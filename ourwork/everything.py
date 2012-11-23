@@ -118,7 +118,7 @@ def analyze_ratio(sky_range=None):
   skies = objectify_data(test=False, sky_range=sky_range)
   ratios1, ratios2 = [], []
   for sky in skies:
-    points, tqs = sky.non_binned_signal()
+    points, tqs = sky.non_binned_signal(nhalos=2)
     sig1 = max(tqs[0]) if tqs[0] else 0.0
     sig2 = max(tqs[1]) if tqs[1] else 0.0
     ratio = (sig2 * 1.0/sig1)
