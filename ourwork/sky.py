@@ -13,6 +13,8 @@ class Halo:
   def euclid_dist_from_halo(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
+  def __str__(self):
+    return "x=%.1f, y=%.1f, sig=%.1f" % (self.x, self.y, self.signal)
 
 class Galaxy:
   def __init__(self, x, y, e1, e2):
@@ -35,6 +37,7 @@ class Sky:
   def __init__(self, skyid, halo1=None, halo2=None, halo3=None):
     self.skyid = skyid
     self.galaxies = []
+    self.n_halos_val = None
     self.predictions = [None, None, None]
     self.actual = [halo1, halo2, halo3]
   
@@ -46,7 +49,9 @@ class Sky:
     return output_list
   
   def n_halos(self):
-    return sum([1 for h in self.actual if h != None])
+    if not self.n_halos_val:
+      self.n_halos_val = sum([1 for h in self.actual if h != None])
+    return self.n_halos_val
 
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
@@ -60,31 +65,49 @@ class Sky:
   def non_binned_signal(self, to_file=False, nhalos=0):
     if nhalos == 0:
       nhalos = random.choice([1,2,3])
+    nhalos = 2
+
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
-    
-    halos = [None, None, None]
-    signal_maps = [None, None, None]
+    halos = []
+    signal_maps = []
 
+    # Predict location of each halo
     for i in range(nhalos):
       tq = []
       max_e = 0.0
       pred_x = 0.0
       pred_y = 0.0
+
+      # Find x_r, y_r with the maximum signal - make that the guess for the halo
       for y_r in y_r_range:
         for x_r in x_r_range:
-          if halos[0] != None and halos[0].x == x_r and halos[0].y == y_r: tq.append(0); continue
-          if halos[1] != None and halos[1].x == x_r and halos[1].y == y_r: tq.append(0); continue
-          t = self.e_tang(x_r, y_r, halos) 
-          tq.append(t)
-          
-          if max_e<t:
-            max_e = t
-            pred_x = x_r
-            pred_y = y_r
-      halos[i] = Halo(x=pred_x, y=pred_y, signal=max_e)
-      signal_maps[i] = tq
+          # See if x_r, y_r is the position of another halo
+          on_other_halo = False
+          for halo in halos:
+            if halo != None and halo.x == x_r and halo.y == y_r:
+              done = True
+              break
 
+          # Find signal at x_r, y_r (if not on the position of another halo)
+          if on_other_halo:
+            tq.append(0.0)
+          else:
+            t = self.e_tang(x_r, y_r, halos) 
+            tq.append(t)
+            if max_e<t:
+              max_e = t
+              pred_x = x_r
+              pred_y = y_r
+
+      halos.append(Halo(x=pred_x, y=pred_y, signal=max_e))
+      signal_maps.append(tq)
+
+    for i in range(3-nhalos):
+      halos.append(None)
+      signal_maps.append(None)
+
+    # Return values
     if to_file == True:
       return halos
     else:
