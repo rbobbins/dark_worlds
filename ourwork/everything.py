@@ -7,54 +7,50 @@ import os
 from sky import *
 
 
-def file_len(fname):
-  """ Calculate the length of a file
-  Arguments:
-         Filename: Name of the file wanting to count the rows of
-  Returns:
-         i+1: Number of lines in file
+def objectify_data(test=True, sky_range=None):
+  """ Creates a list of skies with all sky, galaxy, and all known halo 
+      information.
+      (Only contains halo information if reading from the training dataset)
+
+      test: If True, loads test dataset. If False, loads training dataset.
+      sky_range: List of which skies to load. Indicies match the actual
+        sky number. E.g., sky_range=[210, 300] will load skies #210 and #300
+
+      returns: list of skies
   """
 
-  with open(fname) as f:
-    for i, l in enumerate(f):
-      pass
-  return i + 1
-
-def objectify_data(test=True, sky_range=None):
   if test:
-    n_skies=file_len('../data/Test_haloCounts.csv')-1 #The number of skies in total
+    n_skies_filename = '../data/Test_haloCounts.csv'
   else:
-    n_skies=file_len('../data/Training_halos.csv')-1
-    x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', \
-                                        delimiter=',', unpack=True, usecols=(4,5,6,7,8,9),skiprows=1)
-  
+    n_skies_filename = '../data/Training_halos.csv'
+    x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', delimiter=',', unpack=True, usecols=(4,5,6,7,8,9), skiprows=1)
   if sky_range == None:
-    sky_range = range(n_skies)
+    # Find the length of the file
+    with open(n_skies_filename) as f:
+      for i, l in enumerate(f):
+        pass
+    # Make sky_range cover 1 through the number of skies in the file
+    sky_range = range(1, i+1)
 
   res = []
-  
   for k in sky_range:
     if test:
       sky = Sky()
+      data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
     else:
-      hs = [(x1[k], y1[k]), None, None]
-      if x2[k] != 0.0 or y2[k] != 0.0:
-        hs[1] = (x2[k], y2[k])
-      if x3[k] != 0.0 or y3[k] != 0.0:
-        hs[2] = (x3[k], y3[k])
+      hs = [(x1[k-1], y1[k-1]), None, None]
+      if (x2[k-1] != 0.0 or y2[k-1] != 0.0):
+        hs[1] = (x2[k-1], y2[k-1])
+      if x3[k-1] != 0.0 or y3[k-1] != 0.0:
+        hs[2] = (x3[k-1], y3[k-1])
       sky = Sky(*hs)
-    p=k+1
+      data_filename = '../data/Train_Skies/Training_Sky%i.csv' % k
     
-    if test:
-      x,y,e1,e2=np.loadtxt('../data/Test_Skies/Test_Sky%i.csv' % p,\
-             delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
-    else:
-      x,y,e1,e2=np.loadtxt('../data/Train_Skies/Training_Sky%i.csv' % p,\
-             delimiter=',',unpack=True,usecols=(1,2,3,4),skiprows=1)
-    
+    x, y, e1, e2 = np.loadtxt(data_filename, delimiter=',', unpack=True, usecols=(1,2,3,4), skiprows=1)
+    res.append(sky)
     for i in range(len(x) - 1):
       sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
-    res.append(sky)
+
   return res
 
 def euclidean_distance(point1, point2):
