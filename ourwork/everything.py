@@ -60,10 +60,10 @@ def objectify_data(test=True, sky_range=None):
 def euclidean_distance(point1, point2):
   return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
-def dist_between_halos():
-  skies = objectify_data(test = False)
+def dist_between_halos(sky_range=None):
+  skies = objectify_data(test=False, sky_range=sky_range)
 
-  #what is the average distance between 2 halos?
+  ## what is the average distance between 2 halos?
   ds_2halos = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 2]
 
   ds_3halos = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 3] + \
@@ -81,34 +81,31 @@ def dist_between_halos():
   plt.plot(bin_edges[1:], cdf2, color='red')
   plt.show()
 
-  #given the distance between 2 halos, how far is each of those from the 3rd?
-  # ds_0_to_1 = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 3]
-  # ds_1_to_2 = [euclidean_distance(s.actual[1], s.actual[2]) for s in skies if s.n_halos() == 3]
-  # ds_0_to_2 = [euclidean_distance(s.actual[0], s.actual[2]) for s in skies if s.n_halos() == 3]
+  ## given the distance between 2 halos, how far is each of those from the 3rd?
+  ds_0_to_1 = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 3]
+  ds_1_to_2 = [euclidean_distance(s.actual[1], s.actual[2]) for s in skies if s.n_halos() == 3]
+  ds_0_to_2 = [euclidean_distance(s.actual[0], s.actual[2]) for s in skies if s.n_halos() == 3]
 
-  # plt.scatter(ds_0_to_1, ds_1_to_2)
-  # plt.scatter(ds_0_to_1, ds_0_to_2)
-  # plt.scatter(ds_1_to_2, ds_0_to_1)
-  # plt.scatter(ds_1_to_2, ds_0_to_2)
-  # plt.scatter(ds_0_to_2, ds_0_to_1)
-  # plt.scatter(ds_0_to_2, ds_1_to_2)
+  plt.scatter(ds_0_to_1, ds_1_to_2)
+  plt.scatter(ds_0_to_1, ds_0_to_2)
+  plt.scatter(ds_1_to_2, ds_0_to_1)
+  plt.scatter(ds_1_to_2, ds_0_to_2)
+  plt.scatter(ds_0_to_2, ds_0_to_1)
+  plt.scatter(ds_0_to_2, ds_1_to_2)
+  plt.show()
 
-  #what do the areas of triangles formed by 3 halos look like?
-  # areas = [np.abs(s.actual[0][0] * (s.actual[1][1] - s.actual[2][1]) + \
-  #          s.actual[1][0] * (s.actual[2][1] - s.actual[0][1]) + \
-  #          s.actual[2][0] * (s.actual[0][1] - s.actual[1][1])) / 2.0 for s in skies if s.n_halos() == 3]
+  ## what do the areas of triangles formed by 3 halos look like?
+  areas = [np.abs(s.actual[0][0] * (s.actual[1][1] - s.actual[2][1]) + \
+           s.actual[1][0] * (s.actual[2][1] - s.actual[0][1]) + \
+           s.actual[2][0] * (s.actual[0][1] - s.actual[1][1])) / 2.0 for s in skies if s.n_halos() == 3]
 
-  # counts, bin_edges = np.histogram(np.array(areas), bins=100, density =False)
-  # cdf = np.cumsum(counts) * 1.0 / sum(counts)
-  # plt.plot(bin_edges[1:], cdf)
-
-
-  # plt.show()
+  counts, bin_edges = np.histogram(np.array(areas), bins=100, density =False)
+  cdf = np.cumsum(counts) * 1.0 / sum(counts)
+  plt.plot(bin_edges[1:], cdf)
+  plt.show()
 
 
-  # histogram2 = np.histogram(np.array(ds_3halos), density=True)
-
-def analyze_ratio():
+def analyze_ratio(sky_range=None):
   """
   TO USE: Comment out the line in sky.py > Sky.non_binned_signal
   which says "if self.actual[1] != None:"
@@ -126,12 +123,12 @@ def analyze_ratio():
   Result: This was not the case. If there's only 1 actual halo, it's
   second signal will be close to the first
   """
-  skies = objectify_data(test=False, sky_range=range(0, 200))
+  skies = objectify_data(test=False, sky_range=sky_range)
   ratios1, ratios2 = [], []
   for sky in skies:
-    points, tq1, tq2, tq3 = sky.non_binned_signal()
-    sig1 = max(tq1)
-    sig2 = max(tq2)
+    points, tqs = sky.non_binned_signal()
+    sig1 = max(tqs[0]) if tqs[0] else 0.0
+    sig2 = max(tqs[1]) if tqs[1] else 0.0
     ratio = (sig2 * 1.0/sig1)
     print ratio
     if sky.n_halos() == 1:
