@@ -52,19 +52,15 @@ def objectify_data(test=True, sky_range=None):
 
   return res
 
-def euclidean_distance(point1, point2):
-  return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
 def dist_between_halos(sky_range=None):
   skies = objectify_data(test=False, sky_range=sky_range)
 
   ## what is the average distance between 2 halos?
-  ds_2halos = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 2]
-
-  ds_3halos = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 3] + \
-              [euclidean_distance(s.actual[1], s.actual[2]) for s in skies if s.n_halos() == 3] + \
-              [euclidean_distance(s.actual[0], s.actual[2]) for s in skies if s.n_halos() == 3]
-
+  ds_2halos = [s.actual[0].euclid_dist_from_halo(s.actual[1]) for s in skies if s.n_halos() == 2]
+  ds_3halos = [s.actual[0].euclid_dist_from_halo(s.actual[1]) for s in skies if s.n_halos() == 3] + \
+              [s.actual[1].euclid_dist_from_halo(s.actual[2]) for s in skies if s.n_halos() == 3] + \
+              [s.actual[0].euclid_dist_from_halo(s.actual[2]) for s in skies if s.n_halos() == 3]
 
   counts, bin_edges = np.histogram(np.array(ds_3halos), bins=100, density=False)
   cdf1 = np.cumsum(counts) * 1.0/sum(counts)
@@ -77,9 +73,9 @@ def dist_between_halos(sky_range=None):
   plt.show()
 
   ## given the distance between 2 halos, how far is each of those from the 3rd?
-  ds_0_to_1 = [euclidean_distance(s.actual[0], s.actual[1]) for s in skies if s.n_halos() == 3]
-  ds_1_to_2 = [euclidean_distance(s.actual[1], s.actual[2]) for s in skies if s.n_halos() == 3]
-  ds_0_to_2 = [euclidean_distance(s.actual[0], s.actual[2]) for s in skies if s.n_halos() == 3]
+  ds_0_to_1 = [s.actual[0].euclid_dist_from_halo(s.actual[1]) for s in skies if s.n_halos() == 3]
+  ds_1_to_2 = [s.actual[1].euclid_dist_from_halo(s.actual[2]) for s in skies if s.n_halos() == 3]
+  ds_0_to_2 = [s.actual[0].euclid_dist_from_halo(s.actual[2]) for s in skies if s.n_halos() == 3]
 
   plt.scatter(ds_0_to_1, ds_1_to_2)
   plt.scatter(ds_0_to_1, ds_0_to_2)
@@ -90,9 +86,10 @@ def dist_between_halos(sky_range=None):
   plt.show()
 
   ## what do the areas of triangles formed by 3 halos look like?
-  areas = [np.abs(s.actual[0][0] * (s.actual[1][1] - s.actual[2][1]) + \
-           s.actual[1][0] * (s.actual[2][1] - s.actual[0][1]) + \
-           s.actual[2][0] * (s.actual[0][1] - s.actual[1][1])) / 2.0 for s in skies if s.n_halos() == 3]
+  areas = [np.abs(s.actual[0].x * (s.actual[1].y - s.actual[2].y) + \
+                  s.actual[1].x * (s.actual[2].y - s.actual[0].y) + \
+                  s.actual[2].x * (s.actual[0].y - s.actual[1].y) \
+           ) / 2.0 for s in skies if s.n_halos() == 3]
 
   counts, bin_edges = np.histogram(np.array(areas), bins=100, density =False)
   cdf = np.cumsum(counts) * 1.0 / sum(counts)

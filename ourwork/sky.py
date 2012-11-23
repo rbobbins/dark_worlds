@@ -10,6 +10,9 @@ class Halo:
     self.y = y
     self.signal = signal
 
+  def euclid_dist_from_halo(self, other):
+    return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+
 
 class Galaxy:
   def __init__(self, x, y, e1, e2):
