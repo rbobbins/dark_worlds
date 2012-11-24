@@ -114,36 +114,35 @@ class Sky:
 
 
   def plot(self):
-    fig = figure() 
-    ax = fig.add_subplot(111, aspect='equal')
-    plt.title(self.skyid)
-
-    self.plot_galaxies(ax)
-    for i, color in enumerate(['black', 'blue', 'pink']):
-      if self.actual[i] != None:
-        plt.plot(self.actual[i].x, self.actual[i].y, marker='*', markersize=20, color=color)
-
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
+    x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
     halos, tqs = self.non_binned_signal()
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
- 
-    #plot map of signal
-    if tq1 != None: tq1 = np.array(tq1).reshape((len(x_r_range),len(y_r_range)))
-    if tq2 != None: tq2 = np.array(tq2).reshape((len(x_r_range), len(y_r_range)))
-    if tq3 != None: tq3 = np.array(tq3).reshape((len(x_r_range), len(y_r_range)))
-    x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
-    plt.contourf(x_rs, y_rs, tq1, 20)
-    # plt.contourf(x_rs, y_rs, tq2, 20)
-    # plt.contourf(x_rs, y_rs, tq3, 20)
-    
-    #plot predicted positions
-    if halo1: plt.plot(halo1.x, halo1.y, marker='o', markersize=10, color='black')
-    if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
-    if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
-   
+
+    fig = figure(figsize=(11,11)) 
+    for tq, subplotid in [(tq1, 221), (tq2, 222), (tq3, 223)]:
+      
+      #plot map of signal
+      if tq != None: 
+        ax = fig.add_subplot(subplotid, aspect='equal')
+        plt.title(self.skyid)
+
+        tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
+        plt.contourf(x_rs, y_rs, tq, 20)
+
+        self.plot_galaxies(ax)
+
+        for i, color in enumerate(['black', 'blue', 'pink']):
+          if self.actual[i] != None:
+            plt.plot(self.actual[i].x, self.actual[i].y, marker='*', markersize=20, color=color)
+
+        if halo1: plt.plot(halo1.x, halo1.y, marker='o', markersize=10, color='black')
+        if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
+        if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
+     
     show()
     return halos
 
