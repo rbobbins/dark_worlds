@@ -5,10 +5,9 @@ from pylab import figure, show, rand
 import random
 
 class Halo:
-  def __init__(self, x, y, signal=None):
+  def __init__(self, x, y):
     self.x = x
     self.y = y
-    self.signal = signal
 
   def euclid_dist_from_halo(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -100,7 +99,7 @@ class Sky:
               pred_x = x_r
               pred_y = y_r
 
-      halos.append(Halo(x=pred_x, y=pred_y, signal=max_e))
+      halos.append(Halo(x=pred_x, y=pred_y))
       signal_maps.append(tq)
 
     for i in range(3-nhalos):
