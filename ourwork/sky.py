@@ -64,7 +64,7 @@ class Sky:
   def non_binned_signal(self, to_file=False, nhalos=0):
     if nhalos == 0:
       nhalos = random.choice([1,2,3])
-    nhalos = 2
+    nhalos = 3
 
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
@@ -156,54 +156,27 @@ class Sky:
     theta = np.arctan((y - pred_y)/(x - pred_x))
     e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
 
-    if len(other_halos) == 1:
-      halo = other_halos[0]
-      vect_to_halo = (x - halo.x, y - halo.y)
+    if len(other_halos) > 0:
       vect_to_pred = (x - pred_x, y - pred_y)
+      other_sigs = []
 
-      #find the projection of the vector to halo1 on the vector to 
-      #(potential) halo 2.
-      try:
-        dot_prod = (vect_to_halo[0] * vect_to_pred[0] + vect_to_halo[1] * vect_to_pred[1])
-        mag_vect_to_halo = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
+      for i in range(len(other_halos)):
+        other_sigs.append(e_tang)
+        sig_vect = [0, 0]
+
+        for j in range(i+1):
+          mag_dist_vect = np.sqrt((x-other_halos[j].x)**2 + (y-other_halos[j].y)**2)
+          sig_vect[0] += (x-other_halos[j].x)/mag_dist_vect * other_sigs[j]
+          sig_vect[1] += (y-other_halos[j].y)/mag_dist_vect * other_sigs[j]
+
+        dot_prod = (sig_vect[0] * vect_to_pred[0] + sig_vect[1] * vect_to_pred[1])
+        mag_sig_vect = np.sqrt(sig_vect[0]**2 + sig_vect[1]**2)
         mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
 
-        cos_phi = dot_prod / (mag_vect_to_pred * mag_vect_to_halo)
-        e_tang = e_tang * (1 - cos_phi)
-      except:
-        return 0
-    
-    elif len(other_halos) == 2:
-      halo1 = other_halos[0]
-      halo2 = other_halos[1]
-      # vect_to_halos = (x - (halo1.x + halo2.x), y - (halo1.y + halo2.y))
-      # vect_to_halo1 = (x - halo1.x, y - halo1.y)
-      vect_to_halo2 = (x - halo2.x, y - halo2.y)
-      # vect_to_halos = vect_to_halo1
-      vect_to_halos = vect_to_halo2
-      # vect_to_halos = (vect_to_halo1[0] + vect_to_halo2[0], vect_to_halo1[1] + vect_to_halo2[1])
-      vect_to_pred = (x - pred_x, y - pred_y)
-
-      try:
-        dot_prod = (vect_to_halos[0] * vect_to_pred[0] + vect_to_halos[1] * vect_to_pred[1])
-        mag_vect_to_halos = np.sqrt(vect_to_halos[0]**2 + vect_to_halos[1]**2)
-        mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
-        cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_halos)
-        e_tang = e_tang * (1 - cos_phi)
-      except:
-        return 0
-
-    # for halo in other_halos:
-    #   vect_to_halo = (x - halo.x, y - halo.y)
-    #   vect_to_pred = (x - pred_x, y - pred_y)
-
-    #   try:
-    #     dot_prod = (vect_to_halo[0] * vect_to_pred[0]) + (vect_to_halo[1] * vect_to_pred[1])
-    #     mag_vect_to_h1 = np.sqrt(vect_to_halo[0]**2 + vect_to_halo[1]**2)
-    #     mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
-    #     cos_phi = dot_prod / (mag_vect_to_pred*mag_vect_to_h1)
-    #     e_tang = e_tang * (1 - cos_phi)
-    #   except:
-    #     return 0
+        try:
+          cos_phi = dot_prod / (mag_vect_to_pred * mag_sig_vect)
+          e_tang = e_tang - mag_sig_vect*cos_phi
+        except:
+          e_tang = 0.0
 
     return e_tang.mean()
