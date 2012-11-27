@@ -122,15 +122,17 @@ class Sky:
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
 
+    total_signal = np.zeros((len(x_r_range),len(y_r_range)))
     fig = figure(figsize=(11,11)) 
-    for tq, subplotid in [(tq1, 221), (tq2, 222), (tq3, 223)]:
+    for tq, subplotid, title in [(tq1, 221, 'Signal 1'), (tq2, 222, 'Signal 2'), (tq3, 223, 'Signal 3')]:
       
       #plot map of signal
       if tq != None: 
         ax = fig.add_subplot(subplotid, aspect='equal')
-        plt.title(self.skyid)
+        plt.title("%s: %s" % (self.skyid, title))
 
         tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
+        total_signal += tq
         plt.contourf(x_rs, y_rs, tq, 20)
 
         self.plot_galaxies(ax)
@@ -143,6 +145,9 @@ class Sky:
         if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
         if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
      
+    ax = fig.add_subplot(224, aspect='equal')
+    plt.title("%s: total signal" % (self.skyid))
+    plt.contourf(x_rs, y_rs, total_signal, 20)
     show()
     return halos
 
