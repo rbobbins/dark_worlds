@@ -34,7 +34,7 @@ def objectify_data(test=True, sky_range=None):
 
   res = []
   for k in sky_range:
-    skyid = "sky%d" % k
+    skyid = "Sky%d" % k
     if test:
       sky = Sky(skyid=skyid)
       data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
