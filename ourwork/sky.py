@@ -24,18 +24,31 @@ class Galaxy:
     self.y = y
     self.e1 = e1
     self.e2 = e2
-    self.determine_axes()
+    # self.determine_axes()
 
   def euclid_dist_from_point(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
   
-  def determine_axes(self):
+  def a(self):
     theta = np.arctan(self.e2/self.e1) / 2
     self.theta = theta * 180 / np.pi
 
     E = self.e1 / np.cos(2 * theta)
-    self.a = 50/(1-E)
-    self.b = 50/(1 + E)
+    return 50/(1-E)
+
+  def b(self):
+    theta = np.arctan(self.e2/self.e1) / 2
+    self.theta = theta * 180 / np.pi
+
+    E = self.e1 / np.cos(2 * theta)
+    return 50/(1 + E)
+  # def determine_axes(self):
+  #   theta = np.arctan(self.e2/self.e1) / 2
+  #   self.theta = theta * 180 / np.pi
+
+  #   E = self.e1 / np.cos(2 * theta)
+  #   self.a = 50/(1-E)
+  #   self.b = 50/(1 + E)
 
 
 class Sky:
@@ -61,9 +74,11 @@ class Sky:
   def add_galaxy(self, galaxy):
     self.galaxies.append(galaxy)
 
-  def plot_galaxies(self, ax):
-    for gal in self.galaxies:
-      e = Ellipse((gal.x, gal.y), gal.a, gal.b, angle=gal.theta, linewidth=2, fill=True)
+  def plot_galaxies(self, ax, gals=None):
+    if gals==None:
+      gals = self.galaxies
+    for gal in gals:
+      e = Ellipse((gal.x, gal.y), gal.a(), gal.b(), angle=gal.theta, linewidth=2, fill=True)
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
@@ -124,14 +139,16 @@ class Sky:
     y_r_range = range(0,4200,70)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
-    halos, tqs = self.better_subtraction()
+    halos, tqs, orig_galaxies = self.better_subtraction()
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
+    gs1, gs2, gs3 = orig_galaxies
 
 
     total_signal = np.zeros((len(x_r_range),len(y_r_range)))
     fig = figure(figsize=(11,11)) 
-    for tq, subplotid, title in [(tq1, 221, 'Signal 1'), (tq2, 222, 'Signal 2'), (tq3, 223, 'Signal 3')]:
+    total_signal = np.array(tq1) + np.array(tq2)
+    for tq, subplotid, title, gal in [(tq1, 221, 'Signal 1', gs1), (tq2, 222, 'Signal 2', gs2), (tq3, 223, 'Signal 3', gs3)]:
       
       #plot map of signal
       if tq != None: 
@@ -139,10 +156,12 @@ class Sky:
         plt.title("%s: %s" % (self.skyid, title))
 
         tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-        total_signal += tq
+        # total_signal += tq
         plt.contourf(x_rs, y_rs, tq, 20)
+        plt.colorbar()
+        plt.clim(-0.1, 0.1)
 
-        self.plot_galaxies(ax)
+        self.plot_galaxies(ax,gal)
 
         for i, color in enumerate(['black', 'blue', 'pink']):
           if self.actual[i] != None:
@@ -154,20 +173,26 @@ class Sky:
      
     ax = fig.add_subplot(224, aspect='equal')
     plt.title("%s: total signal" % (self.skyid))
+    total_signal = total_signal.reshape((len(x_r_range), y_r_range))
+    print total_signal
     plt.contourf(x_rs, y_rs, total_signal, 20)
+    plt.colorbar()
+    plt.clim(-0.1, 0.1)
     show()
     return halos
 
   def better_subtraction(self):
-    nhalos = 2
+    nhalos = 3
 
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     halos = []
     signal_maps = []
+    orig_galaxies = []
 
     # Predict location of each halo
     for i in range(nhalos):
+      orig_galaxies.append(self.galaxies)
       signals = []
       max_e = 0.0
       pred_x = 0.0
@@ -180,8 +205,7 @@ class Sky:
           on_other_halo = False
           for halo in halos:
             if halo.x == x_r and halo.y == y_r:
-              done = True
-              break
+              on_other_halo = True
 
           # Find signal at x_r, y_r (if not on the position of another halo)
           if on_other_halo:
@@ -194,13 +218,18 @@ class Sky:
               pred_x = x_r
               pred_y = y_r
 
-      halos.append(Halo(x=pred_x, y=pred_y))
+      #keep track of the halo, and the signal map
+      new_halo = Halo(x=pred_x, y=pred_y)
+      halos.append(new_halo)
       signal_maps.append(signals)
 
       #find proposed halo
-      ideal_sky = self.idealized_copy() #this gets overwritten on every iteration
-      x = newton(ideal_sky.sum_of_tangential_force_at_given_halo, 100, args=(halos[i], self))
-      self.remove_effect_of_halo(x, halos[i], self)
+       #this gets overwritten on every iteration
+      print "about to optimize x"
+      x = newton(self.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
+      # print ideal_sky.sum_of_tangential_force_at_given_halo(x, halos[i], self) 
+      print "optimized x as %f" % x
+      self.remove_effect_of_halo(x, new_halo, self)
 
 
     for i in range(3-nhalos):
@@ -208,31 +237,39 @@ class Sky:
       signal_maps.append(None)
 
     # Return values
-    return halos, signal_maps
+    return halos, signal_maps, orig_galaxies
 
 
-  def sum_of_tangential_force_at_given_halo(self, X, halo, original_sky):
+  def mean_of_tangential_force_at_given_halo(self, X, halo):
     """
       self: ideal sky with perfectly circular galaxies.
     """
-
+    ideal_sky = self.idealized_copy()
+    copy_of_sky = copy.deepcopy(self)
     #do this for the ideal sky
-    self.remove_effect_of_halo(X, halo, original_sky)
-    return self.mean_signal(halo.x, halo.y)
+    copy_of_sky.remove_effect_of_halo(X, halo, self)
+    # print ideal_sky.mean_signal(halo.x, halo.y)
+    return copy_of_sky.sum_signal(halo.x, halo.y)
 
   def mean_signal(self, x_prime, y_prime):
     """
     Calculates the mean signal in a sky at a given(x_prime,y_prime).
     """
+    return np.mean(self.__signal__(x_prime, y_prime))
+
+
+  def sum_signal(self, x_prime, y_prime):
+    return np.sum(self.__signal__(x_prime, y_prime))
+
+  def __signal__(self, x_prime, y_prime):
     x = np.array([galaxy.x for galaxy in self.galaxies])
     y = np.array([galaxy.y for galaxy in self.galaxies])
     e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
     e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
     
     phi = np.arctan((y - y_prime)/(x - x_prime))
-    e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi))
-
-    return np.mean(e_tang)
+    e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
+    return e_tang   
 
   def remove_effect_of_halo(self, X, halo, original_sky):
     """
