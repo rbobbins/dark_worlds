@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse 
+import copy
 import numpy as np
+from scipy.optimize import newton
 from pylab import figure, show, rand
 import random
+
 
 class Halo:
   def __init__(self, x, y):
@@ -23,6 +26,9 @@ class Galaxy:
     self.e2 = e2
     self.determine_axes()
 
+  def euclid_dist_from_point(self, other):
+    return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+  
   def determine_axes(self):
     theta = np.arctan(self.e2/self.e1) / 2
     self.theta = theta * 180 / np.pi
@@ -118,9 +124,10 @@ class Sky:
     y_r_range = range(0,4200,70)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
-    halos, tqs = self.non_binned_signal()
+    halos, tqs = self.better_subtraction()
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
+
 
     total_signal = np.zeros((len(x_r_range),len(y_r_range)))
     fig = figure(figsize=(11,11)) 
@@ -151,37 +158,139 @@ class Sky:
     show()
     return halos
 
+  def better_subtraction(self):
+    nhalos = 2
 
-  def e_tang(self, pred_x, pred_y, other_halos=[]):
+    x_r_range = range(0,4200,70)
+    y_r_range = range(0,4200,70)
+    halos = []
+    signal_maps = []
+
+    # Predict location of each halo
+    for i in range(nhalos):
+      signals = []
+      max_e = 0.0
+      pred_x = 0.0
+      pred_y = 0.0
+
+      # Find x_r, y_r with the maximum signal - make that the guess for the halo
+      for y_r in y_r_range:
+        for x_r in x_r_range:
+          # See if x_r, y_r is the position of another halo
+          on_other_halo = False
+          for halo in halos:
+            if halo.x == x_r and halo.y == y_r:
+              done = True
+              break
+
+          # Find signal at x_r, y_r (if not on the position of another halo)
+          if on_other_halo:
+            signals.append(0.0)
+          else:
+            signal = self.mean_signal(x_r, y_r) 
+            signals.append(signal)
+            if max_e < signal:
+              max_e = signal
+              pred_x = x_r
+              pred_y = y_r
+
+      halos.append(Halo(x=pred_x, y=pred_y))
+      signal_maps.append(signals)
+
+      #find proposed halo
+      ideal_sky = self.idealized_copy() #this gets overwritten on every iteration
+      x = newton(ideal_sky.sum_of_tangential_force_at_given_halo, 100, args=(halos[i], self))
+      self.remove_effect_of_halo(x, halos[i], self)
+
+
+    for i in range(3-nhalos):
+      halos.append(None)
+      signal_maps.append(None)
+
+    # Return values
+    return halos, signal_maps
+
+
+  def sum_of_tangential_force_at_given_halo(self, X, halo, original_sky):
+    """
+      self: ideal sky with perfectly circular galaxies.
+    """
+
+    #do this for the ideal sky
+    self.remove_effect_of_halo(X, halo, original_sky)
+    return self.mean_signal(halo.x, halo.y)
+
+  def mean_signal(self, x_prime, y_prime):
+    """
+    Calculates the mean signal in a sky at a given(x_prime,y_prime).
+    """
     x = np.array([galaxy.x for galaxy in self.galaxies])
     y = np.array([galaxy.y for galaxy in self.galaxies])
     e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
     e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
     
-    theta = np.arctan((y - pred_y)/(x - pred_x))
-    e_tang = -(e1 * np.cos(2 * theta) + e2 * np.sin(2 * theta))
+    phi = np.arctan((y - y_prime)/(x - x_prime))
+    e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi))
 
-    if len(other_halos) > 0:
-      vect_to_pred = (x - pred_x, y - pred_y)
-      other_sigs = []
+    return np.mean(e_tang)
 
-      for i in range(len(other_halos)):
-        other_sigs.append(e_tang)
-        sig_vect = [0, 0]
+  def remove_effect_of_halo(self, X, halo, original_sky):
+    """
+    Cancels out the effect of a halo(X_h, Y_h) on all galaxies in self.
 
-        for j in range(i+1):
-          mag_dist_vect = np.sqrt((x-other_halos[j].x)**2 + (y-other_halos[j].y)**2)
-          sig_vect[0] += (x-other_halos[j].x)/mag_dist_vect * other_sigs[j]
-          sig_vect[1] += (y-other_halos[j].y)/mag_dist_vect * other_sigs[j]
+    If self is an ideal sky, self is modified.
+    If self is equal to original_sky, original_sky is modified.
 
-        dot_prod = (sig_vect[0] * vect_to_pred[0] + sig_vect[1] * vect_to_pred[1])
-        mag_sig_vect = np.sqrt(sig_vect[0]**2 + sig_vect[1]**2)
-        mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
+    Whatever is modified is equal to original_sky, minus the effects of the halo.
+    """
+    for i, gal in enumerate(self.galaxies):
+      phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) #angle btwn x axis and the line from the halo to the galaxy
+      theta = np.pi / 2 - phi
+      r = gal.euclid_dist_from_point(halo)
 
-        try:
-          cos_phi = dot_prod / (mag_vect_to_pred * mag_sig_vect)
-          e_tang = e_tang - mag_sig_vect*cos_phi
-        except:
-          e_tang = 0.0
+      #calculate ellipticity added to the ideal_sky, given Halo and X
+      e1 = X / (- r * ((np.tan(2 * theta) * np.sin(2 * phi)) + np.cos(2 * phi)))
+      e2 = e1 * np.tan(2 * theta)
 
-    return e_tang.mean()
+      #modify ideal_sky, so it is a copy of original_sky, less the proposed effects of a halo
+      self.galaxies[i].e1 = original_sky.galaxies[i].e1 - e1
+      self.galaxies[i].e2 = original_sky.galaxies[i].e2 - e2
+
+  def idealized_copy(self):
+    """
+    Creates copy of self, with all e1 and e2 = 0.
+    """
+    dup = copy.deepcopy(self)
+
+    for gal in dup.galaxies:
+      gal.e1, gal.e2 = 0, 0
+
+    return dup
+
+  # def e_tang(self, pred_x, pred_y, other_halos=[]):
+    # e_tang = self.total_signal()
+
+    # if len(other_halos) > 0:
+    #   vect_to_pred = (x - pred_x, y - pred_y)
+    #   other_sigs = []
+
+    #   for i in range(len(other_halos)):
+    #     other_sigs.append(e_tang)
+    #     sig_vect = [0, 0]
+
+    #     for j in range(i+1):
+    #       mag_dist_vect = np.sqrt((x-other_halos[j].x)**2 + (y-other_halos[j].y)**2)
+    #       sig_vect[0] += (x-other_halos[j].x)/mag_dist_vect * other_sigs[j]
+    #       sig_vect[1] += (y-other_halos[j].y)/mag_dist_vect * other_sigs[j]
+
+    #     dot_prod = (sig_vect[0] * vect_to_pred[0] + sig_vect[1] * vect_to_pred[1])
+    #     mag_sig_vect = np.sqrt(sig_vect[0]**2 + sig_vect[1]**2)
+    #     mag_vect_to_pred = np.sqrt(vect_to_pred[0]**2 + vect_to_pred[1]**2)
+
+    #     try:
+    #       cos_phi = dot_prod / (mag_vect_to_pred * mag_sig_vect)
+    #       e_tang = e_tang - mag_sig_vect*cos_phi
+    #     except:
+    #       e_tang = 0.0
+
+    # return e_tang.mean()
