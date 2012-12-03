@@ -165,8 +165,9 @@ class Sky:
      
     ax = fig.add_subplot(224, aspect='equal')
     plt.title("%s: total signal" % (self.skyid))
-    total_signal = total_signal.reshape((len(x_r_range), y_r_range))
-    print total_signal
+    self.plot_galaxies(ax)
+
+    total_signal = total_signal.reshape((len(x_r_range), len(y_r_range)))
     plt.contourf(x_rs, y_rs, total_signal, 20)
     plt.colorbar()
     plt.clim(-0.1, 0.1)
@@ -176,6 +177,7 @@ class Sky:
   def better_subtraction(self):
     nhalos = 3
 
+    selfcopy = copy.deepcopy(self)
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     halos = []
@@ -184,7 +186,8 @@ class Sky:
 
     # Predict location of each halo
     for i in range(nhalos):
-      orig_galaxies.append(self.galaxies)
+      print "Predicting halo #%d" % (i+1)
+      orig_galaxies.append(copy.deepcopy(selfcopy.galaxies))
       signals = []
       max_e = 0.0
       pred_x = 0.0
@@ -203,7 +206,7 @@ class Sky:
           if on_other_halo:
             signals.append(0.0)
           else:
-            signal = self.mean_signal(x_r, y_r) 
+            signal = selfcopy.mean_signal(x_r, y_r) 
             signals.append(signal)
             if max_e < signal:
               max_e = signal
@@ -217,11 +220,11 @@ class Sky:
 
       #find proposed halo
        #this gets overwritten on every iteration
-      print "about to optimize x"
-      x = newton(self.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
-      # print ideal_sky.sum_of_tangential_force_at_given_halo(x, halos[i], self) 
-      print "optimized x as %f" % x
-      self.remove_effect_of_halo(x, new_halo, self)
+      if i != (nhalos-1):
+        print "Removing halo #%d" % (i+1)
+        x = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
+        print "optimized x as %f" % x
+        selfcopy.remove_effect_of_halo(x, new_halo, selfcopy)
 
 
     for i in range(3-nhalos):
