@@ -7,27 +7,26 @@ from pylab import figure, show, rand
 import random
 
 
-class Halo:
+class Point:
+  def euclid_dist(self, other):
+    return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+
+
+class Halo(Point):
   def __init__(self, x, y):
     self.x = x
     self.y = y
 
-  def euclid_dist_from_halo(self, other):
-    return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
-
   def __str__(self):
     return "x=%.1f, y=%.1f, sig=%.1f" % (self.x, self.y, self.signal)
 
-class Galaxy:
+
+class Galaxy(Point):
   def __init__(self, x, y, e1, e2):
     self.x = x
     self.y = y
     self.e1 = e1
     self.e2 = e2
-    # self.determine_axes()
-
-  def euclid_dist_from_point(self, other):
-    return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
   
   def a(self):
     theta = np.arctan(self.e2/self.e1) / 2
@@ -42,13 +41,6 @@ class Galaxy:
 
     E = self.e1 / np.cos(2 * theta)
     return 50/(1 + E)
-  # def determine_axes(self):
-  #   theta = np.arctan(self.e2/self.e1) / 2
-  #   self.theta = theta * 180 / np.pi
-
-  #   E = self.e1 / np.cos(2 * theta)
-  #   self.a = 50/(1-E)
-  #   self.b = 50/(1 + E)
 
 
 class Sky:
@@ -283,7 +275,7 @@ class Sky:
     for i, gal in enumerate(self.galaxies):
       phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) #angle btwn x axis and the line from the halo to the galaxy
       theta = np.pi / 2 - phi
-      r = gal.euclid_dist_from_point(halo)
+      r = gal.euclid_dist(halo)
 
       #calculate ellipticity added to the ideal_sky, given Halo and X
       e1 = X / (- r * ((np.tan(2 * theta) * np.sin(2 * phi)) + np.cos(2 * phi)))
