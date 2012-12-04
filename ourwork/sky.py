@@ -74,58 +74,6 @@ class Sky:
       ax.add_artist(e)
       e.set_clip_box(ax.bbox)
 
-  def non_binned_signal(self, to_file=False, nhalos=0):
-    if nhalos == 0:
-      nhalos = random.choice([1,2,3])
-    nhalos = 3
-
-    x_r_range = range(0,4200,70)
-    y_r_range = range(0,4200,70)
-    halos = []
-    signal_maps = []
-
-    # Predict location of each halo
-    for i in range(nhalos):
-      tq = []
-      max_e = 0.0
-      pred_x = 0.0
-      pred_y = 0.0
-
-      # Find x_r, y_r with the maximum signal - make that the guess for the halo
-      for y_r in y_r_range:
-        for x_r in x_r_range:
-          # See if x_r, y_r is the position of another halo
-          on_other_halo = False
-          for halo in halos:
-            if halo != None and halo.x == x_r and halo.y == y_r:
-              done = True
-              break
-
-          # Find signal at x_r, y_r (if not on the position of another halo)
-          if on_other_halo:
-            tq.append(0.0)
-          else:
-            t = self.e_tang(x_r, y_r, halos) 
-            tq.append(t)
-            if max_e<t:
-              max_e = t
-              pred_x = x_r
-              pred_y = y_r
-
-      halos.append(Halo(x=pred_x, y=pred_y))
-      signal_maps.append(tq)
-
-    for i in range(3-nhalos):
-      halos.append(None)
-      signal_maps.append(None)
-
-    # Return values
-    if to_file == True:
-      return halos
-    else:
-      return halos, signal_maps
-
-
   def plot(self):
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
@@ -239,24 +187,21 @@ class Sky:
     """
       self: ideal sky with perfectly circular galaxies.
     """
-    ideal_sky = self.idealized_copy()
     copy_of_sky = copy.deepcopy(self)
-    #do this for the ideal sky
     copy_of_sky.remove_effect_of_halo(X, halo, self)
-    # print ideal_sky.mean_signal(halo.x, halo.y)
     return copy_of_sky.sum_signal(halo.x, halo.y)
 
   def mean_signal(self, x_prime, y_prime):
     """
     Calculates the mean signal in a sky at a given(x_prime,y_prime).
     """
-    return np.mean(self.__signal__(x_prime, y_prime))
+    return np.mean(self.__signal(x_prime, y_prime))
 
 
   def sum_signal(self, x_prime, y_prime):
-    return np.sum(self.__signal__(x_prime, y_prime))
+    return np.sum(self.__signal(x_prime, y_prime))
 
-  def __signal__(self, x_prime, y_prime):
+  def __signal(self, x_prime, y_prime):
     x = np.array([galaxy.x for galaxy in self.galaxies])
     y = np.array([galaxy.y for galaxy in self.galaxies])
     e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
@@ -288,16 +233,67 @@ class Sky:
       self.galaxies[i].e1 = original_sky.galaxies[i].e1 - e1
       self.galaxies[i].e2 = original_sky.galaxies[i].e2 - e2
 
-  def idealized_copy(self):
-    """
-    Creates copy of self, with all e1 and e2 = 0.
-    """
-    dup = copy.deepcopy(self)
+  # def idealized_copy(self):
+  #   """
+  #   Creates copy of self, with all e1 and e2 = 0.
+  #   """
+  #   dup = copy.deepcopy(self)
 
-    for gal in dup.galaxies:
-      gal.e1, gal.e2 = 0, 0
+  #   for gal in dup.galaxies:
+  #     gal.e1, gal.e2 = 0, 0
 
-    return dup
+  #   return dup
+
+  # def non_binned_signal(self, to_file=False, nhalos=0):
+  #   if nhalos == 0:
+  #     nhalos = random.choice([1,2,3])
+  #   nhalos = 3
+
+  #   x_r_range = range(0,4200,70)
+  #   y_r_range = range(0,4200,70)
+  #   halos = []
+  #   signal_maps = []
+
+  #   # Predict location of each halo
+  #   for i in range(nhalos):
+  #     tq = []
+  #     max_e = 0.0
+  #     pred_x = 0.0
+  #     pred_y = 0.0
+
+  #     # Find x_r, y_r with the maximum signal - make that the guess for the halo
+  #     for y_r in y_r_range:
+  #       for x_r in x_r_range:
+  #         # See if x_r, y_r is the position of another halo
+  #         on_other_halo = False
+  #         for halo in halos:
+  #           if halo != None and halo.x == x_r and halo.y == y_r:
+  #             done = True
+  #             break
+
+  #         # Find signal at x_r, y_r (if not on the position of another halo)
+  #         if on_other_halo:
+  #           tq.append(0.0)
+  #         else:
+  #           t = self.e_tang(x_r, y_r, halos) 
+  #           tq.append(t)
+  #           if max_e<t:
+  #             max_e = t
+  #             pred_x = x_r
+  #             pred_y = y_r
+
+  #     halos.append(Halo(x=pred_x, y=pred_y))
+  #     signal_maps.append(tq)
+
+  #   for i in range(3-nhalos):
+  #     halos.append(None)
+  #     signal_maps.append(None)
+
+  #   # Return values
+  #   if to_file == True:
+  #     return halos
+  #   else:
+  #     return halos, signal_maps
 
   # def e_tang(self, pred_x, pred_y, other_halos=[]):
     # e_tang = self.total_signal()
