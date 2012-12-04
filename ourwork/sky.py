@@ -220,7 +220,7 @@ class Sky:
     """
     for i, gal in enumerate(self.galaxies):
       phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) #angle btwn x axis and the line from the halo to the galaxy
-      theta = np.pi / 2 - phi
+      theta = phi - np.pi / 2 
       r = gal.euclid_dist(halo)
 
       #calculate ellipticity added to the ideal_sky, given Halo and X
