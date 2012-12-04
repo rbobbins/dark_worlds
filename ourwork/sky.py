@@ -8,15 +8,15 @@ import random
 
 
 class Point:
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
   def euclid_dist(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
 
 class Halo(Point):
-  def __init__(self, x, y):
-    self.x = x
-    self.y = y
-
   def __str__(self):
     return "x=%.1f, y=%.1f, sig=%.1f" % (self.x, self.y, self.signal)
 
@@ -83,11 +83,9 @@ class Sky:
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
     gs1, gs2, gs3 = orig_galaxies
+    total_signal = np.array(tq1) + np.array(tq2) + np.array(tq3)
 
-
-    total_signal = np.zeros((len(x_r_range),len(y_r_range)))
     fig = figure(figsize=(11,11)) 
-    total_signal = np.array(tq1) + np.array(tq2)
     for tq, subplotid, title, gal in [(tq1, 221, 'Signal 1', gs1), (tq2, 222, 'Signal 2', gs2), (tq3, 223, 'Signal 3', gs3)]:
       
       #plot map of signal
