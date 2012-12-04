@@ -151,6 +151,7 @@ def k_nearest_neighbor(training_data, test_point, k):
   #find the k-nearest examples to the test_point
   map_of_stuff.sort()
   votes = [y for dist, y in map_of_stuff]
+
   return Counter(votes[0:k]).most_common(1)[0][0]
 
 
@@ -182,44 +183,84 @@ def analyze_magnitude_of_halos():
     if row[0] == 'n_actual_halos': continue  #ignore header row
     
     y = float(row[0])
-    X = np.array([float(row[1]), float(row[2]), float(row[3]), float(row[4])])
+    base = float(row[1])
+    X = np.array([1.0, float(row[2])/base, float(row[3])/base, float(row[4])/base])
+    # X = np.array([float(row[1]), float(row[2]), float(row[3]), float(row[4])])
     
     #divide by a high number to group everything as training data
-    if (i % 1000) == 0:
+    if (i % 6) == 0:
       cross_val_data.append(Datapoint(X, y))
     else:
       training_data.append(Datapoint(X, y))
 
-  # for k in range(1, 11):
-  #   success = 0
-  #   predictions = 0
+  for k in range(1, 11):
+    success = 0
+    predictions = 0
 
-  #   print k
-  #   for dp in cross_val_data:
-  #     predictions += 1
-  #     pred = k_nearest_neighbor(training_data, dp, k)
-  #     if pred == dp.y: 
-  #       success += 1
-  #     # else:
-  #     #   print pred, dp.y
+    for dp in cross_val_data:
+      if dp.y != 3: continue
+      predictions += 1
+      pred = k_nearest_neighbor(training_data, dp, k)
+      if pred == dp.y: 
+        success += 1
+      # else:
+      #   print pred, dp.y
 
-  #   print "%i successful predictions out of %i guesses" % (success, predictions)
+    # print "k=%i: %i successful predictions out of %i guesses" % (k, success, predictions)
 
-  ratios_at_cutoff, ratios_past_cutoff = [], []
-  for ex in training_data:
-    if ex.y == 1:
-      ratios_at_cutoff.append((ex.x[1] / ex.x[0]))
-      ratios_past_cutoff.append((ex.x[2] / ex.x[1]))
 
-  counts, bin_edges = np.histogram(ratios_at_cutoff, bins=100, density=False)
-  cdf1 = np.cumsum(counts) * 1.0 / sum(counts)
-  plt.plot(bin_edges[1:], cdf1, color='red')
+  # regroup data with X=[m1:m0, m2:m1, m3:m2, m2:m0, m3:m1, m3:m0]
+    
+    # new_training_data, new_cross_data = [], []
+    # for ex in training_data:
+    #   a = ex.x[1] / ex.x[0]
+    #   b = ex.x[2] / ex.x[1]
+    #   c = ex.x[3] / ex.x[2]
 
-  counts, bin_edges = np.histogram(ratios_past_cutoff, bins=100, density=False)
-  cdf2 = np.cumsum(counts) * 1.0 / sum(counts)
-  plt.plot(bin_edges[1:], cdf2, color='blue')
+    #   d = ex.x[2] / ex.x[0]
+    #   e = ex.x[3] / ex.x[1]
 
-  plt.show()
+    #   f = ex.x[3] / ex.x[0]
+    #   x = np.array([a, b, c, d, e, f])
+    #   new_training_data.append(Datapoint(x, ex.y))
+    
+    # for ex in cross_val_data:
+    #   # if ex.y != 3: continue
+    #   predictions += 1
+    #   a = ex.x[1] / ex.x[0]
+    #   b = ex.x[2] / ex.x[1]
+    #   c = ex.x[3] / ex.x[2]
+
+    #   d = ex.x[2] / ex.x[0]
+    #   e = ex.x[3] / ex.x[1]
+
+    #   f = ex.x[3] / ex.x[0]
+    #   x = np.array([a, b, c, d, e, f])
+
+    #   point = Datapoint(x, ex.y)
+    #   pred = k_nearest_neighbor(new_training_data, point, k)
+    #   if pred == point.y:
+    #     success += 1
+    print "k=%i: %i successful predictions out of %i guesses" % (k, success, predictions)
+  # ratios_at_cutoff, ratios_past_cutoff = [], []
+  # ratios_before_cutoff = []
+  # for ex in training_data:
+  #   # if ex.y == 1:
+  #   #   ratios_at_cutoff.append((ex.x[1] / ex.x[0]))
+  #   #   ratios_past_cutoff.append((ex.x[2] / ex.x[1]))
+
+  #   # if ex.y == 2:
+  #   #   ratios_at_cutoff.append(())
+
+  # counts, bin_edges = np.histogram(ratios_at_cutoff, bins=100, density=False)
+  # cdf1 = np.cumsum(counts) * 1.0 / sum(counts)
+  # plt.plot(bin_edges[1:], cdf1, color='red')
+
+  # counts, bin_edges = np.histogram(ratios_past_cutoff, bins=100, density=False)
+  # cdf2 = np.cumsum(counts) * 1.0 / sum(counts)
+  # plt.plot(bin_edges[1:], cdf2, color='blue')
+
+  # plt.show()
 
 
 def write_data(skies=None, output_file='genericOutput.csv', method=None, opts={}):
