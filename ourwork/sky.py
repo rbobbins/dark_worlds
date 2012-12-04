@@ -18,7 +18,7 @@ class Point:
 
 class Halo(Point):
   def __str__(self):
-    return "x=%.1f, y=%.1f, sig=%.1f" % (self.x, self.y, self.signal)
+    return "x=%.1f, y=%.1f" % (self.x, self.y)
 
 
 class Galaxy(Point):
@@ -102,6 +102,7 @@ class Sky:
         self.plot_galaxies(ax,gal)
 
         for i, color in enumerate(['black', 'blue', 'pink']):
+          print self.actual[i]
           if self.actual[i] != None:
             plt.plot(self.actual[i].x, self.actual[i].y, marker='*', markersize=20, color=color)
 
@@ -121,7 +122,7 @@ class Sky:
     return halos
 
   def better_subtraction(self):
-    nhalos = 3
+    nhalos = 4
 
     selfcopy = copy.deepcopy(self)
     x_r_range = range(0,4200,70)
@@ -129,10 +130,11 @@ class Sky:
     halos = []
     signal_maps = []
     orig_galaxies = []
+    ms = []
 
     # Predict location of each halo
     for i in range(nhalos):
-      print "Predicting halo #%d" % (i+1)
+      # print "Predicting halo #%d" % (i+1)
       orig_galaxies.append(copy.deepcopy(selfcopy.galaxies))
       signals = []
       max_e = 0.0
@@ -166,27 +168,28 @@ class Sky:
 
       #find proposed halo
        #this gets overwritten on every iteration
-      if i != (nhalos-1):
-        print "Removing halo #%d" % (i+1)
-        x = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
-        print "optimized x as %f" % x
-        selfcopy.remove_effect_of_halo(x, new_halo, selfcopy)
-
+      # if i != (nhalos-1):
+      # print "Removing halo #%d" % (i+1)
+      m = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
+      ms.append(m)
+      # print "optimized m as %f" % m
+      selfcopy.remove_effect_of_halo(m, new_halo, selfcopy)
 
     for i in range(3-nhalos):
       halos.append(None)
       signal_maps.append(None)
 
     # Return values
-    return halos, signal_maps, orig_galaxies
+    return halos, signal_maps, orig_galaxies, ms
 
 
-  def mean_of_tangential_force_at_given_halo(self, X, halo):
+  def mean_of_tangential_force_at_given_halo(self, m, halo):
     """
       self: ideal sky with perfectly circular galaxies.
+      m: magnitude of the effect of the halo on other galaxies
     """
     copy_of_sky = copy.deepcopy(self)
-    copy_of_sky.remove_effect_of_halo(X, halo, self)
+    copy_of_sky.remove_effect_of_halo(m, halo, self)
     return copy_of_sky.sum_signal(halo.x, halo.y)
 
   def mean_signal(self, x_prime, y_prime):
@@ -209,7 +212,7 @@ class Sky:
     e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
     return e_tang   
 
-  def remove_effect_of_halo(self, X, halo, original_sky):
+  def remove_effect_of_halo(self, m, halo, original_sky):
     """
     Cancels out the effect of a halo(X_h, Y_h) on all galaxies in self.
 
@@ -222,14 +225,21 @@ class Sky:
       phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) #angle btwn x axis and the line from the halo to the galaxy
       theta = phi - np.pi / 2 
       r = gal.euclid_dist(halo)
+      # if i <= 5:
+      #   print "phi is %f" % phi
+      #   print "theta is %f" % theta
+      #   print "galaxy is at %f, %f" % (gal.x, gal.y)
+      #   print "halo is at %f, %f" % (halo.x, halo.y)
 
-      #calculate ellipticity added to the ideal_sky, given Halo and X
-      e1 = X / (- r * ((np.tan(2 * theta) * np.sin(2 * phi)) + np.cos(2 * phi)))
+      #calculate ellipticity added to the ideal_sky, given Halo and m
+      e1 = m / (- r * ((np.tan(2 * theta) * np.sin(2 * phi)) + np.cos(2 * phi)))
       e2 = e1 * np.tan(2 * theta)
 
       #modify ideal_sky, so it is a copy of original_sky, less the proposed effects of a halo
       self.galaxies[i].e1 = original_sky.galaxies[i].e1 - e1
       self.galaxies[i].e2 = original_sky.galaxies[i].e2 - e2
+
+
 
   # def idealized_copy(self):
   #   """
