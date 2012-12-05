@@ -6,7 +6,7 @@ from scipy.optimize import newton
 from pylab import figure, show, rand
 import random
 from collections import Counter
-import csv
+from machine_learning import *
 
 class Point:
   def __init__(self, x, y):
@@ -15,11 +15,6 @@ class Point:
 
   def euclid_dist(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
-
-class TrainingExample:
-  def __init__(self, x, y):
-    self.x = x #NOTE: x should be a numpy array
-    self.y = y
 
 
 class Halo(Point):
@@ -114,7 +109,6 @@ class Sky:
         if halo1: plt.plot(halo1.x, halo1.y, marker='o', markersize=10, color='black')
         if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
         if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
-
     show()
  
     return halos
@@ -122,7 +116,6 @@ class Sky:
   def better_subtraction(self, training_data=None, to_file=False):
     nhalos = 5
 
-    selfcopy = copy.deepcopy(self)
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     halos = []
@@ -131,6 +124,7 @@ class Sky:
     ms = []
 
     # Predict location of each halo
+    selfcopy = copy.deepcopy(self) # Will be modifying galaxies in sky, doing this not to modify orig data
     for i in range(nhalos):
       orig_galaxies.append(copy.deepcopy(selfcopy.galaxies))
       signals = []
@@ -171,7 +165,6 @@ class Sky:
 
     #find the number of halos that *actually* exist
     actual_nhalos = self.predict_number_of_halos(ms, training_data)
-    print actual_nhalos
     #delete extraneous data
     while len(halos) > actual_nhalos:
       del halos[-1]
@@ -279,22 +272,3 @@ class Sky:
     phi = np.arctan((y - y_prime)/(x - x_prime))
     e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
     return e_tang 
-
-  def objectify_training_data(self):
-    fname = 'predicted_mag_of_halos.csv'
-    read_file = csv.reader(open(fname, 'rb'))
-    training_data = []
-    
-    #group data as training/cross_validation
-    for row in read_file:
-      if row[0] == 'n_actual_halos': continue  #ignore header row
-      
-      y = float(row[0])
-      x1, x2, x3, x4, x5 = float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])
-      ratios = [x2/x1, x3/x2, x4/x3, x5/x4, \
-                x3/x1, x4/x2, x5/x3, \
-                x4/x1, x5/x2, \
-                x5/x1]
-      X = np.array(ratios)
-      training_data.append(TrainingExample(X, y))
-    return training_data

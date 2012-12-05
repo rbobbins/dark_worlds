@@ -6,6 +6,7 @@ from metric import analyze
 import os
 from sky import *
 from collections import Counter
+from machine_learning import *
 
 
 def objectify_data(test=True, sky_range=None):
@@ -153,12 +154,6 @@ def k_nearest_neighbor(training_data, test_point, k):
   votes = [y for dist, y in map_of_stuff]
 
   return Counter(votes[0:k]).most_common(1)[0][0]
-
-
-class Datapoint:
-  def __init__(self, x, y):
-    self.x = x #should be a np.array()
-    self.y = y #should be an integer
 
 
 
