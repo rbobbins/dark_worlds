@@ -120,7 +120,7 @@ class Sky:
     return halos
 
   def better_subtraction(self, training_data=None, to_file=False):
-    nhalos = 4
+    nhalos = 5
 
     selfcopy = copy.deepcopy(self)
     x_r_range = range(0,4200,70)
@@ -193,8 +193,12 @@ class Sky:
     if training_data == None:
       training_data = self.objectify_training_data()
     
-    x1, x2, x3, x4 = ms
-    X = np.array([x2/x1, x3/x2, x4/x3, x3/x1, x4/x2, x4/x1])
+    x1, x2, x3, x4, x5 = ms
+    ratios = [x2/x1, x3/x2, x4/x3, x5/x4, \
+                x3/x1, x4/x2, x5/x3, \
+                x4/x1, x5/x2, \
+                x5/x1]
+    X = np.array(ratios)
 
     map_of_distances = []
     for t in training_data:
@@ -286,8 +290,11 @@ class Sky:
       if row[0] == 'n_actual_halos': continue  #ignore header row
       
       y = float(row[0])
-      x1, x2, x3, x4 = float(row[1]), float(row[2]), float(row[3]), float(row[4])
-      X = np.array([x2/x1, x3/x2, x4/x3, x3/x1, x4/x2, x4/x1])
-      
+      x1, x2, x3, x4, x5 = float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])
+      ratios = [x2/x1, x3/x2, x4/x3, x5/x4, \
+                x3/x1, x4/x2, x5/x3, \
+                x4/x1, x5/x2, \
+                x5/x1]
+      X = np.array(ratios)
       training_data.append(TrainingExample(X, y))
     return training_data
