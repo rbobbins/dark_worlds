@@ -160,6 +160,10 @@ class Datapoint:
     self.x = x #should be a np.array()
     self.y = y #should be an integer
 
+
+
+
+
 def analyze_magnitude_of_halos():
   """
   Analayzes the file "predicted_mag_of_halos.csv".
@@ -184,11 +188,11 @@ def analyze_magnitude_of_halos():
     
     y = float(row[0])
     base = float(row[1])
-    X = np.array([1.0, float(row[2])/base, float(row[3])/base, float(row[4])/base])
-    # X = np.array([float(row[1]), float(row[2]), float(row[3]), float(row[4])])
+    # X = np.array([1.0, float(row[2])/base, float(row[3])/base, float(row[4])/base])
+    X = np.array([float(row[1]), float(row[2]), float(row[3]), float(row[4])])
     
     #divide by a high number to group everything as training data
-    if (i % 6) == 0:
+    if (i % 4) == 0:
       cross_val_data.append(Datapoint(X, y))
     else:
       training_data.append(Datapoint(X, y))
@@ -197,57 +201,55 @@ def analyze_magnitude_of_halos():
     success = 0
     predictions = 0
 
-    for dp in cross_val_data:
-      if dp.y != 3: continue
-      predictions += 1
-      pred = k_nearest_neighbor(training_data, dp, k)
-      if pred == dp.y: 
-        success += 1
-      # else:
-      #   print pred, dp.y
+    # for dp in cross_val_data:
+    #   if dp.y != 1: continue
+    #   predictions += 1
+    #   pred = k_nearest_neighbor(training_data, dp, k)
+    #   if pred == dp.y: 
+    #     success += 1
 
     # print "k=%i: %i successful predictions out of %i guesses" % (k, success, predictions)
 
 
-  # regroup data with X=[m1:m0, m2:m1, m3:m2, m2:m0, m3:m1, m3:m0]
+    # regroup data with X=[m1:m0, m2:m1, m3:m2, m2:m0, m3:m1, m3:m0]
+    new_training_data, new_cross_data = [], []
+    for ex in training_data:
+      a = ex.x[1] / ex.x[0]
+      b = ex.x[2] / ex.x[1]
+      c = ex.x[3] / ex.x[2]
+
+      d = ex.x[2] / ex.x[0]
+      e = ex.x[3] / ex.x[1]
+
+      f = ex.x[3] / ex.x[0]
+      x = np.array([a, b, c, d, e, f])
+      new_training_data.append(Datapoint(x, ex.y))
     
-    # new_training_data, new_cross_data = [], []
-    # for ex in training_data:
-    #   a = ex.x[1] / ex.x[0]
-    #   b = ex.x[2] / ex.x[1]
-    #   c = ex.x[3] / ex.x[2]
+    for ex in cross_val_data:
+      # if ex.y != 1: continue
+      predictions += 1
+      a = ex.x[1] / ex.x[0]
+      b = ex.x[2] / ex.x[1]
+      c = ex.x[3] / ex.x[2]
 
-    #   d = ex.x[2] / ex.x[0]
-    #   e = ex.x[3] / ex.x[1]
+      d = ex.x[2] / ex.x[0]
+      e = ex.x[3] / ex.x[1]
 
-    #   f = ex.x[3] / ex.x[0]
-    #   x = np.array([a, b, c, d, e, f])
-    #   new_training_data.append(Datapoint(x, ex.y))
-    
-    # for ex in cross_val_data:
-    #   # if ex.y != 3: continue
-    #   predictions += 1
-    #   a = ex.x[1] / ex.x[0]
-    #   b = ex.x[2] / ex.x[1]
-    #   c = ex.x[3] / ex.x[2]
+      f = ex.x[3] / ex.x[0]
+      x = np.array([a, b, c, d, e, f])
 
-    #   d = ex.x[2] / ex.x[0]
-    #   e = ex.x[3] / ex.x[1]
-
-    #   f = ex.x[3] / ex.x[0]
-    #   x = np.array([a, b, c, d, e, f])
-
-    #   point = Datapoint(x, ex.y)
-    #   pred = k_nearest_neighbor(new_training_data, point, k)
-    #   if pred == point.y:
-    #     success += 1
+      point = Datapoint(x, ex.y)
+      pred = k_nearest_neighbor(new_training_data, point, k)
+      if pred == point.y:
+        success += 1
     print "k=%i: %i successful predictions out of %i guesses" % (k, success, predictions)
+  
   # ratios_at_cutoff, ratios_past_cutoff = [], []
   # ratios_before_cutoff = []
   # for ex in training_data:
-  #   # if ex.y == 1:
-  #   #   ratios_at_cutoff.append((ex.x[1] / ex.x[0]))
-  #   #   ratios_past_cutoff.append((ex.x[2] / ex.x[1]))
+  #   if ex.y == 1:
+  #     ratios_at_cutoff.append((ex.x[2] / ex.x[1]))
+  #     ratios_past_cutoff.append((ex.x[2] / ex.x[1]))
 
   #   # if ex.y == 2:
   #   #   ratios_at_cutoff.append(())

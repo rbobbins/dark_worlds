@@ -5,7 +5,8 @@ import numpy as np
 from scipy.optimize import newton
 from pylab import figure, show, rand
 import random
-
+from collections import Counter
+import csv
 
 class Point:
   def __init__(self, x, y):
@@ -14,6 +15,11 @@ class Point:
 
   def euclid_dist(self, other):
     return np.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+
+class TrainingExample:
+  def __init__(self, x, y):
+    self.x = x #NOTE: x should be a numpy array
+    self.y = y
 
 
 class Halo(Point):
@@ -79,11 +85,11 @@ class Sky:
     y_r_range = range(0,4200,70)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
     
-    halos, tqs, orig_galaxies = self.better_subtraction()
+    halos, tqs, orig_galaxies, ms = self.better_subtraction()
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
     gs1, gs2, gs3 = orig_galaxies
-    total_signal = np.array(tq1) + np.array(tq2) + np.array(tq3)
+    # total_signal = np.array(tq1) + np.array(tq2) + np.array(tq3)
 
     fig = figure(figsize=(11,11)) 
     for tq, subplotid, title, gal in [(tq1, 221, 'Signal 1', gs1), (tq2, 222, 'Signal 2', gs2), (tq3, 223, 'Signal 3', gs3)]:
@@ -102,26 +108,18 @@ class Sky:
         self.plot_galaxies(ax,gal)
 
         for i, color in enumerate(['black', 'blue', 'pink']):
-          print self.actual[i]
           if self.actual[i] != None:
             plt.plot(self.actual[i].x, self.actual[i].y, marker='*', markersize=20, color=color)
 
         if halo1: plt.plot(halo1.x, halo1.y, marker='o', markersize=10, color='black')
         if halo2: plt.plot(halo2.x, halo2.y, marker='o', markersize=10, color='blue')
         if halo3: plt.plot(halo3.x, halo3.y, marker='o', markersize=10, color='pink')
-     
-    ax = fig.add_subplot(224, aspect='equal')
-    plt.title("%s: total signal" % (self.skyid))
-    self.plot_galaxies(ax)
 
-    total_signal = total_signal.reshape((len(x_r_range), len(y_r_range)))
-    plt.contourf(x_rs, y_rs, total_signal, 20)
-    plt.colorbar()
-    plt.clim(-0.1, 0.1)
     show()
+ 
     return halos
 
-  def better_subtraction(self):
+  def better_subtraction(self, training_data=None, to_file=False):
     nhalos = 4
 
     selfcopy = copy.deepcopy(self)
@@ -134,7 +132,6 @@ class Sky:
 
     # Predict location of each halo
     for i in range(nhalos):
-      # print "Predicting halo #%d" % (i+1)
       orig_galaxies.append(copy.deepcopy(selfcopy.galaxies))
       signals = []
       max_e = 0.0
@@ -167,21 +164,49 @@ class Sky:
       signal_maps.append(signals)
 
       #find proposed halo
-       #this gets overwritten on every iteration
-      # if i != (nhalos-1):
-      # print "Removing halo #%d" % (i+1)
       m = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
       ms.append(m)
-      # print "optimized m as %f" % m
       selfcopy.remove_effect_of_halo(m, new_halo, selfcopy)
 
-    for i in range(3-nhalos):
+
+    #find the number of halos that *actually* exist
+    actual_nhalos = self.predict_number_of_halos(ms, training_data)
+    print actual_nhalos
+    #delete extraneous data
+    while len(halos) > actual_nhalos:
+      del halos[-1]
+      del signal_maps[-1]
+      del ms[-1]
+
+    for i in range(3-actual_nhalos):
       halos.append(None)
       signal_maps.append(None)
 
     # Return values
-    return halos, signal_maps, orig_galaxies, ms
+    if to_file:
+      return halos
+    else:
+      return halos, signal_maps, orig_galaxies[0:3], ms
 
+
+  def predict_number_of_halos(self, ms, training_data=None):
+    if training_data == None:
+      training_data = self.objectify_training_data()
+    
+    x1, x2, x3, x4 = ms
+    X = np.array([x2/x1, x3/x2, x4/x3, x3/x1, x4/x2, x4/x1])
+
+    map_of_distances = []
+    for t in training_data:
+      diff = t.x - X
+      dist = np.sqrt(np.sum(np.square(diff)))
+      map_of_distances.append((dist, t.y))
+
+    #find the k-nearest examples to X
+    map_of_distances.sort()
+    votes = [y for dist, y in map_of_distances]
+
+    return int(Counter(votes[0:7]).most_common(1)[0][0])
 
   def mean_of_tangential_force_at_given_halo(self, m, halo):
     """
@@ -250,3 +275,19 @@ class Sky:
     phi = np.arctan((y - y_prime)/(x - x_prime))
     e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
     return e_tang 
+
+  def objectify_training_data(self):
+    fname = 'predicted_mag_of_halos.csv'
+    read_file = csv.reader(open(fname, 'rb'))
+    training_data = []
+    
+    #group data as training/cross_validation
+    for row in read_file:
+      if row[0] == 'n_actual_halos': continue  #ignore header row
+      
+      y = float(row[0])
+      x1, x2, x3, x4 = float(row[1]), float(row[2]), float(row[3]), float(row[4])
+      X = np.array([x2/x1, x3/x2, x4/x3, x3/x1, x4/x2, x4/x1])
+      
+      training_data.append(TrainingExample(X, y))
+    return training_data
