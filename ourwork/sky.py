@@ -192,26 +192,6 @@ class Sky:
     copy_of_sky.remove_effect_of_halo(m, halo, self)
     return copy_of_sky.sum_signal(halo.x, halo.y)
 
-  def mean_signal(self, x_prime, y_prime):
-    """
-    Calculates the mean signal in a sky at a given(x_prime,y_prime).
-    """
-    return np.mean(self.__signal(x_prime, y_prime))
-
-
-  def sum_signal(self, x_prime, y_prime):
-    return np.sum(self.__signal(x_prime, y_prime))
-
-  def __signal(self, x_prime, y_prime):
-    x = np.array([galaxy.x for galaxy in self.galaxies])
-    y = np.array([galaxy.y for galaxy in self.galaxies])
-    e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
-    e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
-    
-    phi = np.arctan((y - y_prime)/(x - x_prime))
-    e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
-    return e_tang   
-
   def remove_effect_of_halo(self, m, halo, original_sky):
     """
     Cancels out the effect of a halo(X_h, Y_h) on all galaxies in self.
@@ -222,14 +202,12 @@ class Sky:
     Whatever is modified is equal to original_sky, minus the effects of the halo.
     """
     for i, gal in enumerate(self.galaxies):
-      phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) #angle btwn x axis and the line from the halo to the galaxy
+      #phi = angle btwn x axis and the line from the halo to the galaxy
+      phi = np.arctan((gal.y - halo.y) / (gal.x - halo.x)) 
+      
+      #theta = angle between x axis and the galaxy's major axis
       theta = phi - np.pi / 2 
       r = gal.euclid_dist(halo)
-      # if i <= 5:
-      #   print "phi is %f" % phi
-      #   print "theta is %f" % theta
-      #   print "galaxy is at %f, %f" % (gal.x, gal.y)
-      #   print "halo is at %f, %f" % (halo.x, halo.y)
 
       #calculate ellipticity added to the ideal_sky, given Halo and m
       e1 = m / (- r * ((np.tan(2 * theta) * np.sin(2 * phi)) + np.cos(2 * phi)))
@@ -239,4 +217,36 @@ class Sky:
       self.galaxies[i].e1 = original_sky.galaxies[i].e1 - e1
       self.galaxies[i].e2 = original_sky.galaxies[i].e2 - e2
 
+  def mean_signal(self, x_prime, y_prime):
+    """
+    Calculates the mean signal in a sky at a given(x_prime,y_prime).
+    """
+    return np.mean(self.__signal__(x_prime, y_prime))
 
+
+  def sum_signal(self, x_prime, y_prime):
+    """
+    Calculates the sum of the signal in a sky at a given(x_prime, y_prime)
+    """
+    return np.sum(self.__signal__(x_prime, y_prime))
+
+  def __signal__(self, x_prime, y_prime):
+    """
+    Ellipticity of each galaxy that is tangential to (x_prime, y_prime).
+
+    As defined: http://www.kaggle.com/c/DarkWorlds/details/an-introduction-to-ellipticity
+     - "the force exerted by the dark matter halo on the galaxy is tangential."
+    
+    So, we are assuming that all of the tangential ellipticity is a result of the
+    force exerted by the dark matter halo. 
+
+    NOTE: If we have 1 halo, this is true. If we have >1 halo, isn't this less true?
+    """
+    x = np.array([galaxy.x for galaxy in self.galaxies])
+    y = np.array([galaxy.y for galaxy in self.galaxies])
+    e1 = np.array([galaxy.e1 for galaxy in self.galaxies])
+    e2 = np.array([galaxy.e2 for galaxy in self.galaxies])
+    
+    phi = np.arctan((y - y_prime)/(x - x_prime))
+    e_tang = -(e1 * np.cos(2 * phi) + e2 * np.sin(2 * phi)) 
+    return e_tang 
