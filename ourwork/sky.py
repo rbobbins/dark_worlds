@@ -113,7 +113,7 @@ class Sky:
  
     return halos
 
-  def better_subtraction(self, training_data=None, to_file=False):
+  def better_subtraction(self, training_data=None, to_file=False, for_training_data=False, scaling_factor=1):
     nhalos = 5
 
     x_r_range = range(0,4200,70)
@@ -160,20 +160,20 @@ class Sky:
       #find proposed halo
       m = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
       ms.append(m)
-      selfcopy.remove_effect_of_halo(m, new_halo, selfcopy)
+      selfcopy.remove_effect_of_halo((m*scaling_factor), new_halo, selfcopy)
 
+    if not for_training_data:
+      #find the number of halos that *actually* exist
+      actual_nhalos = self.predict_number_of_halos(ms, training_data)
+      #delete extraneous data
+      while len(halos) > actual_nhalos:
+        del halos[-1]
+        del signal_maps[-1]
+        del ms[-1]
 
-    #find the number of halos that *actually* exist
-    actual_nhalos = self.predict_number_of_halos(ms, training_data)
-    #delete extraneous data
-    while len(halos) > actual_nhalos:
-      del halos[-1]
-      del signal_maps[-1]
-      del ms[-1]
-
-    for i in range(3-actual_nhalos):
-      halos.append(None)
-      signal_maps.append(None)
+      for i in range(3-actual_nhalos):
+        halos.append(None)
+        signal_maps.append(None)
 
     # Return values
     if to_file:
@@ -184,7 +184,7 @@ class Sky:
 
   def predict_number_of_halos(self, ms, training_data=None):
     if training_data == None:
-      training_data = self.objectify_training_data()
+      training_data = objectify_training_data()
     
     x1, x2, x3, x4, x5 = ms
     ratios = [x2/x1, x3/x2, x4/x3, x5/x4, \

@@ -8,6 +8,17 @@ from sky import *
 from collections import Counter
 from machine_learning import *
 
+def generate_halo_mag_data(fname, sky_range=None, scaling_factor=1 ):
+  skies = objectify_data(test=False, sky_range=sky_range)
+  c = csv.writer(open(fname, "wb")) #Now write the array to a csv file
+  c.writerow([str('n_actual_halos'),str('mag_h1'),str( 'mag_h2'),str( 'mag_h3'),str( 'mag_h4')])
+  
+  for sky in skies:
+    foo, bar, baz, m = sky.better_subtraction(scaling_factor=scaling_factor, for_training_data=True)
+    row = [sky.n_halos()] + m
+    c.writerow(row)
+    print row
+
 
 def objectify_data(test=True, sky_range=None):
   """ Creates a list of skies with all sky, galaxy, and all known halo 

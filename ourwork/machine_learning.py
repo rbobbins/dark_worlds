@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+from everything import *
 
 class DataPoint:
   def __init__(self, x, y):
@@ -7,8 +8,7 @@ class DataPoint:
     self.y = y #should be an integer
 
 
-def objectify_training_data():
-  fname = 'predicted_mag_of_halos.csv'
+def objectify_training_data(fname):
   read_file = csv.reader(open(fname, 'rb'))
   training_data = []
   
