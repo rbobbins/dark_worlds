@@ -8,6 +8,7 @@ from sky import *
 from collections import Counter
 from machine_learning import *
 
+
 def generate_halo_mag_data(fname, sky_range=None, scaling_factor=1 ):
   skies = objectify_data(test=False, sky_range=sky_range)
   c = csv.writer(open(fname, "wb")) #Now write the array to a csv file
@@ -31,10 +32,11 @@ def objectify_data(sky_range=None):
 
       returns: list of skies
   """
-  foo = raw_input("Type 'train' for training data, 'test' for test data")
+  #Ask the user whether to use test or training data.
+  foo = raw_input("Type 'train' for training data, 'test' for test data:\n")
   if foo == 'test':
     test = True
-  else if foo = 'train':
+  elif foo == 'train':
     test = False
   else:
     print "Invalid entry"
@@ -71,7 +73,7 @@ def objectify_data(sky_range=None):
     for i in range(len(x) - 1):
       sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
 
-  return res
+  return res, test
 
 
 def dist_between_halos(sky_range=None):
