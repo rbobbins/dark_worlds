@@ -54,6 +54,19 @@ class Universe:
       print "Writing 5 halo postions + magnitudes for %s" % sky.skyid
       c.writerow(sky_output)
 
+
+
+  #   return None  
+  # def probabilistically_determine_number_of_halos(self):
+  #   # nskies_in_bin = len(self.skies) / 3
+  #   # training_data = objectify_training_data()
+
+  #   # for sky in self.skies:
+  #   #   halos, signal_maps, , ms = sky.better_subtraction()
+  #   #   #find the number of halos in the 7 closest skies
+
+  #     #g
+
 class Galaxy(Point):
   def __init__(self, x, y, e1, e2):
     self.x = x
@@ -194,7 +207,6 @@ class Sky:
       ms.append(m)
       selfcopy.remove_effect_of_halo((m*scaling_factor), new_halo, selfcopy)
 
-      actual_nhalos = self.predict_number_of_halos(ms, training_data)
     # if not for_training_data:
     #   #find the number of halos that *actually* exist
     #   actual_nhalos = self.predict_number_of_halos(ms, training_data)
@@ -236,7 +248,8 @@ class Sky:
     map_of_distances.sort()
     votes = [y for dist, y in map_of_distances]
 
-    return int(Counter(votes[0:7]).most_common(1)[0][0])
+    return votes[0:7]
+    # return int(Counter(votes[0:7]).most_common(1)[0][0])
 
   def mean_of_tangential_force_at_given_halo(self, m, halo):
     """
