@@ -7,10 +7,10 @@ from metric import *
 if __name__ == "__main__":
   # sky_range = [1, 101, 201]
   sky_range = None
-  skies = objectify_data(test=False, sky_range=sky_range)
+  skies = objectify_data(sky_range=sky_range)
  
 
-  for s in [1, 0.9, 0.8, 0.7, 0.6]:
+  for s in [0.9, 0.8, 0.7, 0.6]:
   # for s in [1, 0.8]:
     training_file = "training_data_s=%i.csv" % int(s*10)
     print "Generating training data:%s" % training_file
