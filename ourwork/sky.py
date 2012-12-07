@@ -22,6 +22,51 @@ class Halo(Point):
     return "x=%.1f, y=%.1f" % (self.x, self.y)
 
 
+class Universe:
+  def __init__(self, skies, test=False):
+    self.skies = skies
+    self.test = test
+
+  def overguess_positions_of_halos(self):
+    """ Predict the position of 5 halos in every sky, and write that
+    data to a csv file. Can be used for later analyses, including predicting
+    the number of actual halos in the sky, and trimming the data accordingly.
+    """
+
+    if self.test:
+      output_file = 'TEST_predicted_position_of_5halos.csv'
+    else: 
+      output_file = 'TRAIN_predicted_position_of_5halos.csv'
+
+      
+
+    print "Writing %s" % output_file
+    c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
+    c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),\
+      str( 'pred_x2'), str( 'pred_y2'), str( 'pred_x3'), str(' pred_y3'),\
+       str('pred_x4'), str('pred_y4'), str('pred_x5'), str('pred_y5'), \
+       str('m1'), str('m2'), str('m3'), str('m4'), str('m5')])
+    
+    for sky in self.skies:
+      halos, foo, bar, ms = sky.better_subtraction()
+      sky.predictions = halos
+      sky_output = sky.formatted_output_list() + ms
+      print "Writing 5 halo postions + magnitudes for %s" % sky.skyid
+      c.writerow(sky_output)
+
+
+
+  #   return None  
+  # def probabilistically_determine_number_of_halos(self):
+  #   # nskies_in_bin = len(self.skies) / 3
+  #   # training_data = objectify_training_data()
+
+  #   # for sky in self.skies:
+  #   #   halos, signal_maps, , ms = sky.better_subtraction()
+  #   #   #find the number of halos in the 7 closest skies
+
+  #     #g
+
 class Galaxy(Point):
   def __init__(self, x, y, e1, e2):
     self.x = x
@@ -162,24 +207,24 @@ class Sky:
       ms.append(m)
       selfcopy.remove_effect_of_halo((m*scaling_factor), new_halo, selfcopy)
 
-    if not for_training_data:
-      #find the number of halos that *actually* exist
-      actual_nhalos = self.predict_number_of_halos(ms, training_data)
-      #delete extraneous data
-      while len(halos) > actual_nhalos:
-        del halos[-1]
-        del signal_maps[-1]
-        del ms[-1]
+    # if not for_training_data:
+    #   #find the number of halos that *actually* exist
+    #   actual_nhalos = self.predict_number_of_halos(ms, training_data)
+    #   #delete extraneous data
+    #   while len(halos) > actual_nhalos:
+    #     del halos[-1]
+    #     del signal_maps[-1]
+    #     del ms[-1]
 
-      for i in range(3-actual_nhalos):
-        halos.append(None)
-        signal_maps.append(None)
+    #   for i in range(3-actual_nhalos):
+    #     halos.append(None)
+    #     signal_maps.append(None)
 
-    # Return values
-    if to_file:
-      return halos
-    else:
-      return halos, signal_maps, orig_galaxies[0:3], ms
+    # # Return values
+    # if to_file:
+    #   return halos
+    # else:
+    return halos, signal_maps, orig_galaxies[0:3], ms
 
 
   def predict_number_of_halos(self, ms, training_data=None):
@@ -203,7 +248,8 @@ class Sky:
     map_of_distances.sort()
     votes = [y for dist, y in map_of_distances]
 
-    return int(Counter(votes[0:7]).most_common(1)[0][0])
+    return votes[0:7]
+    # return int(Counter(votes[0:7]).most_common(1)[0][0])
 
   def mean_of_tangential_force_at_given_halo(self, m, halo):
     """
