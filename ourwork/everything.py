@@ -20,7 +20,7 @@ def generate_halo_mag_data(fname, sky_range=None, scaling_factor=1 ):
     print row
 
 
-def objectify_data(test=True, sky_range=None):
+def objectify_data(sky_range=None):
   """ Creates a list of skies with all sky, galaxy, and all known halo 
       information.
       (Only contains halo information if reading from the training dataset)
@@ -31,7 +31,15 @@ def objectify_data(test=True, sky_range=None):
 
       returns: list of skies
   """
-
+  foo = raw_input("Type 'train' for training data, 'test' for test data")
+  if foo == 'test':
+    test = True
+  else if foo = 'train':
+    test = False
+  else:
+    print "Invalid entry"
+    return
+    
   if test:
     n_skies_filename = '../data/Test_haloCounts.csv'
   else:
