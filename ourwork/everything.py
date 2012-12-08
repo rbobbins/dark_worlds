@@ -21,59 +21,62 @@ def generate_halo_mag_data(fname, sky_range=None, scaling_factor=1 ):
     print row
 
 
-def objectify_data(sky_range=None):
-  """ Creates a list of skies with all sky, galaxy, and all known halo 
-      information.
-      (Only contains halo information if reading from the training dataset)
+# def objectify_data(sky_range=None):
+#   """ Creates a list of skies with all sky, galaxy, and all known halo 
+#       information.
+#       (Only contains halo information if reading from the training dataset)
 
-      test: If True, loads test dataset. If False, loads training dataset.
-      sky_range: List of which skies to load. Indicies match the actual
-        sky number. E.g., sky_range=[210, 300] will load skies #210 and #300
+#       test: If True, loads test dataset. If False, loads training dataset.
+#       sky_range: List of which skies to load. Indicies match the actual
+#         sky number. E.g., sky_range=[210, 300] will load skies #210 and #300
 
-      returns: list of skies
-  """
-  #Ask the user whether to use test or training data.
-  foo = raw_input("Type 'train' for training data, 'test' for test data:\n")
-  if foo == 'test':
-    test = True
-  elif foo == 'train':
-    test = False
-  else:
-    print "Invalid entry"
-    return
+#       returns: list of skies
+#   """
+#   #Ask the user whether to use test or training data.
+#   foo = raw_input("Type 'train' for training data, 'test' for test data:\n")
+#   if foo == 'test':
+#     test = True
+#   elif foo == 'train':
+#     test = False
+#   else:
+#     print "Invalid entry"
+#     return
     
-  if test:
-    n_skies_filename = '../data/Test_haloCounts.csv'
-  else:
-    n_skies_filename = '../data/Training_halos.csv'
-    x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', delimiter=',', unpack=True, usecols=(4,5,6,7,8,9), skiprows=1)
-  if sky_range == None:
-    # Find the length of the file
-    with open(n_skies_filename) as f:
-      for i, l in enumerate(f):
-        pass
-    # Make sky_range cover 1 through the number of skies in the file
-    sky_range = range(1, i+1)
+#   if test:
+#     n_skies_filename = '../data/Test_haloCounts.csv'
+#     prexisting_pred_filename = "TEST_predicted_positions.csv"
+#   else:
+#     n_skies_filename = '../data/Training_halos.csv'
+#     prexisting_pred_filename = "TRAIN_predicted_positions.csv"
+#     x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', delimiter=',', unpack=True, usecols=(4,5,6,7,8,9), skiprows=1)
+  
+#   if sky_range == None:
+#     # Find the length of the file
+#     with open(n_skies_filename) as f:
+#       for i, l in enumerate(f):
+#         pass
+#     # Make sky_range cover 1 through the number of skies in the file
+#     sky_range = range(1, i+1)
 
-  res = []
-  for k in sky_range:
-    skyid = "Sky%d" % k
-    if test:
-      sky = Sky(skyid=skyid)
-      data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
-    else:
-      hs1 = Halo(x1[k-1], y1[k-1]) if (x1[k-1] != 0.0 or y1[k-1] != 0.0) else None
-      hs2 = Halo(x2[k-1], y2[k-1]) if (x2[k-1] != 0.0 or y2[k-1] != 0.0) else None
-      hs3 = Halo(x3[k-1], y3[k-1]) if (x3[k-1] != 0.0 or y3[k-1] != 0.0) else None
-      sky = Sky(skyid=skyid, halo1=hs1, halo2=hs2, halo3=hs3)
-      data_filename = '../data/Train_Skies/Training_Sky%i.csv' % k
-    res.append(sky)
+#   res = []
+#   for k in sky_range:
+#     skyid = "Sky%d" % k
+#     if test:
+#       sky = Sky(skyid=skyid)
+#       data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
+#     else:
+#       hs1 = Halo(x1[k-1], y1[k-1]) if (x1[k-1] != 0.0 or y1[k-1] != 0.0) else None
+#       hs2 = Halo(x2[k-1], y2[k-1]) if (x2[k-1] != 0.0 or y2[k-1] != 0.0) else None
+#       hs3 = Halo(x3[k-1], y3[k-1]) if (x3[k-1] != 0.0 or y3[k-1] != 0.0) else None
+#       sky = Sky(skyid=skyid, halo1=hs1, halo2=hs2, halo3=hs3)
+#       data_filename = '../data/Train_Skies/Training_Sky%i.csv' % k
+#     res.append(sky)
 
-    x, y, e1, e2 = np.loadtxt(data_filename, delimiter=',', unpack=True, usecols=(1,2,3,4), skiprows=1)
-    for i in range(len(x) - 1):
-      sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
+#     x, y, e1, e2 = np.loadtxt(data_filename, delimiter=',', unpack=True, usecols=(1,2,3,4), skiprows=1)
+#     for i in range(len(x) - 1):
+#       sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
 
-  return res, test
+#   return res, test
 
 
 def dist_between_halos(sky_range=None):
