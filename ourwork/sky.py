@@ -59,18 +59,18 @@ class Universe:
   
     for i, sky in enumerate(self.skies):
       ms = saved_data[i][11:]
-      pred_halos = [Halo(saved_data[i][1], saved_data[i][2]), Halo(saved_data[i][3], saved_data[i][4]), Halo(saved_data[i][5], saved_data[i][6])]
-      
+      pred_halos = sky.predictions
+
       #First, do predictions for skies with edge halos (delete those halos, + anything past them)
-      if (pred_halos[1].x == 0 or pred_halos[1].x == 4130 or pred_halos[1].y == 0 or pred_halos[1].y == 4130):
+      if (pred_halos[1].x == 0 or pred_halos[1].y == 0):
         print "chopped 2 halos"
         nhalos = 1
-      elif pred_halos[2].x == 0 or pred_halos[2].x == 4130 or pred_halos[2].y == 0 or pred_halos[2].y == 4130:
+      elif pred_halos[2].x == 0 or pred_halos[2].y == 0:
         print "chopped 1 halo"
         nhalos = 2
       #Then, use our k-nearest neighbors method
       else:
-        votes = sky.predict_number_of_halos(ms, training_data=training_data)[1:]
+        votes = sky.predict_number_of_halos(ms, training_data=training_data)
         nhalos = int(Counter(votes).most_common(1)[0][0])
 
       sky.remove_non_existent_halos(pred_halos, nhalos)
@@ -96,17 +96,17 @@ class Universe:
     else: 
       return 'TRAIN_predicted_position_of_5halos.csv'
 
-  def objectify_data(sky_range=None):
-  """ Creates a list of skies with all sky, galaxy, and all known halo 
-      information.
-      (Only contains halo information if reading from the training dataset)
+  def objectify_data(self, sky_range=None):
+    """ Creates a list of skies with all sky, galaxy, and all known halo 
+        information.
+        (Only contains halo information if reading from the training dataset)
 
-      test: If True, loads test dataset. If False, loads training dataset.
-      sky_range: List of which skies to load. Indicies match the actual
-        sky number. E.g., sky_range=[210, 300] will load skies #210 and #300
+        test: If True, loads test dataset. If False, loads training dataset.
+        sky_range: List of which skies to load. Indicies match the actual
+          sky number. E.g., sky_range=[210, 300] will load skies #210 and #300
 
-      returns: list of skies
-  """
+        returns: list of skies
+    """
     #Ask the user whether to use test or training data.
     foo = raw_input("Type 'train' for training data, 'test' for test data:\n")
     if foo == 'test': self.test = True
@@ -119,8 +119,8 @@ class Universe:
       n_skies_filename = '../data/Training_halos.csv'
       x1, y1, x2, y2, x3, y3 = np.loadtxt('../data/Training_halos.csv', delimiter=',', unpack=True, usecols=(4,5,6,7,8,9), skiprows=1)
   
-    predictions_file = self.__saved_predictions_filename()
-
+    saved_data = self.__load_saved_data()
+  
     if sky_range == None:
       # Find the length of the file
       with open(n_skies_filename) as f:
@@ -132,7 +132,7 @@ class Universe:
     res = []
     for k in sky_range:
       skyid = "Sky%d" % k
-      if test:
+      if self.test:
         sky = Sky(skyid=skyid)
         data_filename = '../data/Test_Skies/Test_Sky%i.csv' % k
       else:
@@ -147,9 +147,12 @@ class Universe:
       for i in range(len(x) - 1):
         sky.add_galaxy(Galaxy(x[i], y[i], e1[i], e2[i]))
 
-      pred_h1_x, pred_h1_y, pred_h2_x, pred_h2_y, pred_h3_x, pred_h3_y = self.__load_saved_data()[1:7]
 
-    return res, test
+      pred_h1_x, pred_h1_y, pred_h2_x, pred_h2_y, pred_h3_x, pred_h3_y = saved_data[k-1][1:7]
+      sky.predictions = [Halo(pred_h1_x, pred_h1_y), Halo(pred_h2_x, pred_h2_y), Halo(pred_h3_x, pred_h3_y)]
+      print "Loaded %s" % skyid
+
+    return res
 
 
 
