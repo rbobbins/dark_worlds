@@ -24,8 +24,9 @@ class Halo(Point):
 
 class Universe:
   def __init__(self, skies, test=False):
-    self.skies = skies
     self.test = test
+    self.skies = skies
+
 
   def overguess_positions_of_halos(self):
     """ Predict the position of 5 halos in every sky, and write that
@@ -33,14 +34,10 @@ class Universe:
     the number of actual halos in the sky, and trimming the data accordingly.
     """
 
-    if self.test:
-      output_file = 'TEST_predicted_position_of_5halos.csv'
-    else: 
-      output_file = 'TRAIN_predicted_position_of_5halos.csv'
-
-      
-
+    output_file = self.__saved_positions_and_magnitudes()
     print "Writing %s" % output_file
+    
+    #write 5 halos' positions and their respective magnitudes to a csv file
     c = csv.writer(open(output_file, "wb")) #Now write the array to a csv file
     c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),\
       str( 'pred_x2'), str( 'pred_y2'), str( 'pred_x3'), str(' pred_y3'),\
@@ -54,18 +51,53 @@ class Universe:
       print "Writing 5 halo postions + magnitudes for %s" % sky.skyid
       c.writerow(sky_output)
 
+  def write_predictions_to_file(self, output_file):
+    training_data = objectify_training_data('training_data_s=10.csv')
+    saved_data = self.__load_saved_data()
+
+    c = csv.writer(open(output_file, "wb"))
+    c.writerow([str('SkyId'),str('pred_x1'),str( 'pred_y1'),str( 'pred_x2'),str( 'pred_y2'),str( 'pred_x3'),str(' pred_y3')])
+  
+    for i, sky in enumerate(self.skies):
+      ms = saved_data[i][11:]
+      pred_halos = [Halo(saved_data[i][1], saved_data[i][2]), Halo(saved_data[i][3], saved_data[i][4]), Halo(saved_data[i][5], saved_data[i][6])]
+      
+      #First, do predictions for skies with edge halos (delete those halos, + anything past them)
+      if (pred_halos[1].x == 0 or pred_halos[1].x == 4130 or pred_halos[1].y == 0 or pred_halos[1].y == 4130):
+        print "chopped 2 halos"
+        nhalos = 1
+      elif pred_halos[2].x == 0 or pred_halos[2].x == 4130 or pred_halos[2].y == 0 or pred_halos[2].y == 4130:
+        print "chopped 1 halo"
+        nhalos = 2
+      #Then, use our k-nearest neighbors method
+      else:
+        votes = sky.predict_number_of_halos(ms, training_data=training_data)[1:]
+        nhalos = int(Counter(votes).most_common(1)[0][0])
+
+      sky.remove_non_existent_halos(pred_halos, nhalos)
+      sky_output = sky.formatted_output_list()
+      c.writerow(sky_output)
 
 
-  #   return None  
-  # def probabilistically_determine_number_of_halos(self):
-  #   # nskies_in_bin = len(self.skies) / 3
-  #   # training_data = objectify_training_data()
+  def __load_saved_data(self):
+    fname = self.__saved_positions_and_magnitudes()
+    reader = csv.reader(open(fname, 'rb'))
 
-  #   # for sky in self.skies:
-  #   #   halos, signal_maps, , ms = sky.better_subtraction()
-  #   #   #find the number of halos in the 7 closest skies
+    data = []
+    for row in reader:
+      if row[0] == 'SkyId': continue
+      new_row = [row[0]] + [float(cell) for cell in row[1:]]
+      data.append(new_row)
 
-  #     #g
+    return data
+
+  def __saved_positions_and_magnitudes(self):
+    if self.test:
+      return 'TEST_predicted_position_of_5halos.csv'
+    else: 
+      return 'TRAIN_predicted_position_of_5halos.csv'
+
+
 
 class Galaxy(Point):
   def __init__(self, x, y, e1, e2):
@@ -209,7 +241,7 @@ class Sky:
 
     # if not for_training_data:
     #   #find the number of halos that *actually* exist
-    #   actual_nhalos = self.predict_number_of_halos(ms, training_data)
+    # actual_nhalos = self.predict_number_of_halos(ms, training_data)
     #   #delete extraneous data
     #   while len(halos) > actual_nhalos:
     #     del halos[-1]
@@ -226,6 +258,19 @@ class Sky:
     # else:
     return halos, signal_maps, orig_galaxies[0:3], ms
 
+
+  def remove_non_existent_halos(self, halos, pred_nhalos):
+    while len(halos) > pred_nhalos:
+      del halos[-1]
+      # del signal_maps[-1]
+      # del ms[-1]
+
+    for i in range(3-pred_nhalos):
+      halos.append(None)
+      # signal_maps.append(None)
+
+    self.predictions = halos
+    
 
   def predict_number_of_halos(self, ms, training_data=None):
     if training_data == None:
@@ -248,7 +293,7 @@ class Sky:
     map_of_distances.sort()
     votes = [y for dist, y in map_of_distances]
 
-    return votes[0:7]
+    return votes[0:8]
     # return int(Counter(votes[0:7]).most_common(1)[0][0])
 
   def mean_of_tangential_force_at_given_halo(self, m, halo):
