@@ -31,6 +31,9 @@ class Universe:
     """ Predict the position of 5 halos in every sky, and write that
     data to a csv file. Can be used for later analyses, including predicting
     the number of actual halos in the sky, and trimming the data accordingly.
+
+    NOTE: Very slow. Should only be run if the halo prediction method is changed.
+    Otherwise, load data via self.__load_saved_data()
     """
 
     output_file = self.__saved_positions_and_magnitudes()
@@ -61,17 +64,18 @@ class Universe:
       ms = saved_data[i][11:]
       pred_halos = sky.predictions
 
-      #First, do predictions for skies with edge halos (delete those halos, + anything past them)
+      #Assume that halos at the edge of a sky are incorrect, and that any halos
+      #after them are also incorrect
       if (pred_halos[1].x == 0 or pred_halos[1].y == 0):
         print "chopped 2 halos"
         nhalos = 1
       elif pred_halos[2].x == 0 or pred_halos[2].y == 0:
         print "chopped 1 halo"
         nhalos = 2
-      #Then, use our k-nearest neighbors method
+      
+      #Otherwise, use our semi-accurate k-nearest neighbors method
       else:
-        votes = sky.predict_number_of_halos(ms, training_data=training_data)
-        nhalos = int(Counter(votes).most_common(1)[0][0])
+        nhalos = sky.predict_number_of_halos(ms, training_data=training_data)
 
       sky.remove_non_existent_halos(pred_halos, nhalos)
       sky_output = sky.formatted_output_list()
@@ -79,6 +83,10 @@ class Universe:
 
 
   def __load_saved_data(self):
+    """Loads the data in TRAIN_predicted_position_of_5halos.csv or
+    TEST_predicted_position_of_5halos.csv.
+
+    """
     fname = self.__saved_predictions_filename()
     reader = csv.reader(open(fname, 'rb'))
 
@@ -157,6 +165,11 @@ class Universe:
 
 
 class Galaxy(Point):
+  """
+  x, y represent the position of the galaxy
+  e1, e2 represent its ellipticity, as defined by Kaggle
+  a, b are proportional to e1/e2, and necessary for plotting galaxies
+  """
   def __init__(self, x, y, e1, e2):
     self.x = x
     self.y = y
@@ -179,14 +192,32 @@ class Galaxy(Point):
 
 
 class Sky:
+  """
+  skyid: string, as represented in the given data
+  galaxies: a list of Galaxies, as represented in the given data
+  predictions: a list of Halos (up to 3), representing predicted halo positions
+  actual: a list of Halos (up to 3), representing known halo positions. [Applicable
+  only to training data]
+  """
   def __init__(self, skyid, halo1=None, halo2=None, halo3=None):
     self.skyid = skyid
     self.galaxies = []
     self.n_halos_val = None
     self.predictions = [None, None, None]
     self.actual = [halo1, halo2, halo3]
-  
+ 
+  def add_galaxy(self, galaxy):
+    """
+    Appends a Galaxy to the sky's list of galaxies
+    """
+    self.galaxies.append(galaxy)
+
   def formatted_output_list(self):
+    """
+    Returns list of predicted halos: [h1_x, h1_y, h2_x, h2_y, h3_x, h3_y]
+    If a halo doesn't exist, it replaces "None" with the point (0, 0)
+    Used for formatting output to submit to Kaggle
+    """
     output_list = [self.skyid]
     for halo in self.predictions:
       output_list.append(halo.x if halo else 0.0)
@@ -194,12 +225,9 @@ class Sky:
     return output_list
   
   def n_halos(self):
-    if not self.n_halos_val:
-      self.n_halos_val = sum([1 for h in self.actual if h != None])
-    return self.n_halos_val
+    """Number of actual halos. [Applicable only to training data]"""
+    return sum([1 for h in self.actual if h != None])
 
-  def add_galaxy(self, galaxy):
-    self.galaxies.append(galaxy)
 
   def plot_galaxies(self, ax, gals=None):
     if gals==None:
@@ -210,6 +238,8 @@ class Sky:
       e.set_clip_box(ax.bbox)
 
   def plot(self):
+    """Plots the predicted signals caused by each halo, as well as a cumulative signal.
+    Also plots the galaxies in the sky, with their ellipticities as caused by the halos."""
     x_r_range = range(0,4200,70)
     y_r_range = range(0,4200,70)
     x_rs, y_rs = np.meshgrid(x_r_range, y_r_range)
@@ -218,7 +248,6 @@ class Sky:
     halo1, halo2, halo3 = halos
     tq1, tq2, tq3 = tqs
     gs1, gs2, gs3 = orig_galaxies
-    # total_signal = np.array(tq1) + np.array(tq2) + np.array(tq3)
 
     fig = figure(figsize=(11,11)) 
     for tq, subplotid, title, gal in [(tq1, 221, 'Signal 1', gs1), (tq2, 222, 'Signal 2', gs2), (tq3, 223, 'Signal 3', gs3)]:
@@ -229,7 +258,6 @@ class Sky:
         plt.title("%s: %s" % (self.skyid, title))
 
         tq = np.array(tq).reshape((len(x_r_range),len(y_r_range)))
-        # total_signal += tq
         plt.contourf(x_rs, y_rs, tq, 20)
         plt.colorbar()
         plt.clim(-0.1, 0.1)
@@ -247,7 +275,23 @@ class Sky:
  
     return halos
 
-  def better_subtraction(self, training_data=None, to_file=False, for_training_data=False, scaling_factor=1):
+  def better_subtraction(self, training_data=None, to_file=False, for_training_data=False):
+    """
+    Predicts the position of up to 5 halos in the sky. Note that we're 
+    overpredicting, since there can't be more than 3 halos. This extra info is
+    used for training data, and helped us test several hypotheses.
+
+    Returns:
+    halos: list of 5 predicted Halos
+    signal_maps: list of 5 signal maps, as caused by each halo
+    orig_galaxies: list of 3 sublists, where each sublist contains galaxies whose ellipticies
+                  do not account for the effect of previous halos.
+
+    ms: predicted magnitude of each halo. Magnitudes are calculated as the factor needed
+        to completely negate a halo at its location. eg, if a halo is predicted to be at 
+        (100, 200), we find the value of m that forced the signal at (100, 200) to be 0.
+
+    """
     nhalos = 5
 
     x_r_range = range(0,4200,70)
@@ -257,8 +301,11 @@ class Sky:
     orig_galaxies = []
     ms = []
 
+
+    # Will be modifying galaxies in sky, make copy to avoid modifying orig data
+    selfcopy = copy.deepcopy(self) 
+    
     # Predict location of each halo
-    selfcopy = copy.deepcopy(self) # Will be modifying galaxies in sky, doing this not to modify orig data
     for i in range(nhalos):
       orig_galaxies.append(copy.deepcopy(selfcopy.galaxies))
       signals = []
@@ -281,6 +328,8 @@ class Sky:
           else:
             signal = selfcopy.mean_signal(x_r, y_r) 
             signals.append(signal)
+
+            #if this is the greatest signal found so far, it's the best guess for halo's position
             if max_e < signal:
               max_e = signal
               pred_x = x_r
@@ -294,45 +343,39 @@ class Sky:
       #find proposed halo
       m = newton(selfcopy.mean_of_tangential_force_at_given_halo, 100, args=(new_halo,))
       ms.append(m)
-      selfcopy.remove_effect_of_halo((m*scaling_factor), new_halo, selfcopy)
+      selfcopy.remove_effect_of_halo(m, new_halo, selfcopy)
 
-    # if not for_training_data:
-    #   #find the number of halos that *actually* exist
-    # actual_nhalos = self.predict_number_of_halos(ms, training_data)
-    #   #delete extraneous data
-    #   while len(halos) > actual_nhalos:
-    #     del halos[-1]
-    #     del signal_maps[-1]
-    #     del ms[-1]
-
-    #   for i in range(3-actual_nhalos):
-    #     halos.append(None)
-    #     signal_maps.append(None)
-
-    # # Return values
-    # if to_file:
-    #   return halos
-    # else:
     return halos, signal_maps, orig_galaxies[0:3], ms
 
 
   def remove_non_existent_halos(self, halos, pred_nhalos):
+    """We always assume there are 5 halos, then make an educated guess at the 
+    real number of halos. This function sets our prediction, based on the
+    predicted number of halos.
+    """
+
     while len(halos) > pred_nhalos:
       del halos[-1]
-      # del signal_maps[-1]
-      # del ms[-1]
 
     for i in range(3-pred_nhalos):
       halos.append(None)
-      # signal_maps.append(None)
 
     self.predictions = halos
     
 
   def predict_number_of_halos(self, ms, training_data=None):
+    """ Creates a feature vector of 10 features, based on the 5 halos' 
+    magnitudes and their ratios to each other. Uses the k-nearest neighbor
+    algorithm to predict the number of halos in this sky. 
+
+    Note: Not very accurate. (Approx 50 percent correct when it has 6 or 7
+          votes for a certain number of halos. Otherwise, 33 pecent correct)
+    """
+
     if training_data == None:
       training_data = objectify_training_data()
     
+    #create feature vector for sky
     x1, x2, x3, x4, x5 = ms
     ratios = [x2/x1, x3/x2, x4/x3, x5/x4, \
                 x3/x1, x4/x2, x5/x3, \
@@ -340,18 +383,18 @@ class Sky:
                 x5/x1]
     X = np.array(ratios)
 
+    #distance from self to each training example
     map_of_distances = []
     for t in training_data:
       diff = t.x - X
       dist = np.sqrt(np.sum(np.square(diff)))
       map_of_distances.append((dist, t.y))
 
-    #find the k-nearest examples to X
+    #find the 7 nearest examples to self
     map_of_distances.sort()
     votes = [y for dist, y in map_of_distances]
 
-    return votes[0:8]
-    # return int(Counter(votes[0:7]).most_common(1)[0][0])
+    return int(Counter(votes[0:7]).most_common(1)[0][0])
 
   def mean_of_tangential_force_at_given_halo(self, m, halo):
     """
@@ -360,7 +403,7 @@ class Sky:
     """
     copy_of_sky = copy.deepcopy(self)
     copy_of_sky.remove_effect_of_halo(m, halo, self)
-    return copy_of_sky.sum_signal(halo.x, halo.y)
+    return copy_of_sky.mean_signal(halo.x, halo.y)
 
   def remove_effect_of_halo(self, m, halo, original_sky):
     """
@@ -394,12 +437,6 @@ class Sky:
     return np.mean(self.__signal__(x_prime, y_prime))
 
 
-  def sum_signal(self, x_prime, y_prime):
-    """
-    Calculates the sum of the signal in a sky at a given(x_prime, y_prime)
-    """
-    return np.sum(self.__signal__(x_prime, y_prime))
-
   def __signal__(self, x_prime, y_prime):
     """
     Ellipticity of each galaxy that is tangential to (x_prime, y_prime).
@@ -407,10 +444,11 @@ class Sky:
     As defined: http://www.kaggle.com/c/DarkWorlds/details/an-introduction-to-ellipticity
      - "the force exerted by the dark matter halo on the galaxy is tangential."
     
-    So, we are assuming that all of the tangential ellipticity is a result of the
-    force exerted by the dark matter halo. 
+    So, we are assuming that all of the tangential ellipticity is a result of 
+    the force exerted by the dark matter halo. 
 
-    NOTE: If we have 1 halo, this is true. If we have >1 halo, isn't this less true?
+    NOTE: If we have 1 halo, this assumption is true. If we have >1 halo, isn't 
+          it less true?
     """
     x = np.array([galaxy.x for galaxy in self.galaxies])
     y = np.array([galaxy.y for galaxy in self.galaxies])

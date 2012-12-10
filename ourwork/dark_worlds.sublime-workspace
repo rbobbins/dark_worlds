@@ -1,0 +1,975 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"write",
+				"writerow"
+			],
+			[
+				"remo",
+				"remove_non_existent_halos"
+			],
+			[
+				"actu",
+				"actual_nhalos"
+			],
+			[
+				"high",
+				"high_confidence"
+			],
+			[
+				"hi",
+				"high_confidence"
+			],
+			[
+				"predi",
+				"predict_number_of_halos"
+			],
+			[
+				"Sky",
+				"SkyId"
+			],
+			[
+				"actual",
+				"actual_halos"
+			],
+			[
+				"acu",
+				"actual_halos"
+			],
+			[
+				"actua",
+				"actual_halos"
+			],
+			[
+				"mag",
+				"mag_vect_to_h1"
+			],
+			[
+				"vect",
+				"vect_to_pred_y"
+			],
+			[
+				"vet",
+				"vect_to_pred_x"
+			],
+			[
+				"vec",
+				"vect_to_pred_y"
+			],
+			[
+				"pred",
+				"pred_x"
+			],
+			[
+				"vecs_to",
+				"vecs_to_pred_x"
+			],
+			[
+				"vecs",
+				"vecs_to_h1_x"
+			],
+			[
+				"ve",
+				"vec_to_h2"
+			],
+			[
+				"force",
+				"force_due_to_h1"
+			],
+			[
+				"forc",
+				"force_due_to_h1"
+			],
+			[
+				"poin",
+				"point_to_h2"
+			],
+			[
+				"point",
+				"point_to_h1"
+			],
+			[
+				"x_r",
+				"x_r_range"
+			],
+			[
+				"y_r",
+				"y_r_range"
+			],
+			[
+				"plot",
+				"plot_galaxies"
+			],
+			[
+				"bin",
+				"bin_y0"
+			],
+			[
+				"tang",
+				"tangential_force"
+			],
+			[
+				"average",
+				"average_tan_force"
+			],
+			[
+				"aver",
+				"average_tan_force"
+			],
+			[
+				"rad",
+				"radius"
+			],
+			[
+				"radius",
+				"radius_weight"
+			],
+			[
+				"out",
+				"output_file"
+			],
+			[
+				"ex",
+				"exepcted1"
+			],
+			[
+				"the",
+				"the_great_airship"
+			],
+			[
+				"exe",
+				"expected1"
+			],
+			[
+				"with",
+				"with_predictions"
+			],
+			[
+				"gri",
+				"gridded_signal"
+			],
+			[
+				"max",
+				"max_likelihood"
+			],
+			[
+				"position",
+				"position_halo"
+			],
+			[
+				"positi",
+				"position_halo"
+			],
+			[
+				"most",
+				"most_common_value"
+			],
+			[
+				"img",
+				"img_new"
+			],
+			[
+				"train",
+				"training_data"
+			],
+			[
+				"thet",
+				"thetamin"
+			],
+			[
+				"gray",
+				"gray2ind"
+			],
+			[
+				"hex",
+				"hexesAsText"
+			],
+			[
+				"tog",
+				"togglePalette"
+			],
+			[
+				"tex",
+				"textPalette"
+			],
+			[
+				"he",
+				"hexes_as_text"
+			],
+			[
+				"div",
+				"divId"
+			],
+			[
+				"new",
+				"newSpan"
+			],
+			[
+				"create",
+				"createElement"
+			],
+			[
+				"all",
+				"all_hexes"
+			],
+			[
+				"al",
+				"all_text"
+			],
+			[
+				"pa",
+				"path_to_file"
+			],
+			[
+				"X_",
+				"X_cross"
+			],
+			[
+				"y_t",
+				"y_train"
+			],
+			[
+				"X",
+				"X_train"
+			],
+			[
+				"best",
+				"best_accuracy"
+			],
+			[
+				"y_tra",
+				"y_train_orig"
+			],
+			[
+				"nea",
+				"nearest_neighbors_improved"
+			],
+			[
+				"n",
+				"nearest_neighbor"
+			],
+			[
+				"font",
+				"font-family"
+			],
+			[
+				"margin",
+				"margin-top"
+			],
+			[
+				"recover",
+				"recovered_j"
+			],
+			[
+				"proj",
+				"projection_k"
+			],
+			[
+				"arg",
+				"argv"
+			],
+			[
+				"min",
+				"min_cost"
+			],
+			[
+				"word",
+				"word_indices"
+			],
+			[
+				"vocab",
+				"vocabList"
+			],
+			[
+				"sigm",
+				"sigma_try"
+			],
+			[
+				"sig",
+				"sigma_try"
+			],
+			[
+				"C",
+				"C_try"
+			],
+			[
+				"cross",
+				"cross_error"
+			],
+			[
+				"svm",
+				"svmPredict"
+			],
+			[
+				"val",
+				"vals_to_try"
+			],
+			[
+				"va",
+				"vals_to_try"
+			],
+			[
+				"opt",
+				"optimizeParameters"
+			],
+			[
+				"y_",
+				"y_train"
+			],
+			[
+				"J",
+				"J_train"
+			],
+			[
+				"J_",
+				"J_crossval"
+			],
+			[
+				"x",
+				"Xval"
+			],
+			[
+				"er",
+				"error_train"
+			],
+			[
+				"lin",
+				"linearRegCostFunction"
+			],
+			[
+				"tee",
+				"tee_with_two_output_file"
+			],
+			[
+				"one",
+				"one_output"
+			],
+			[
+				"Theta1_gra",
+				"Theta1_grad_reg"
+			],
+			[
+				"Th",
+				"Theta1_grad"
+			],
+			[
+				"Thet",
+				"Theta1_grad"
+			],
+			[
+				"Theta",
+				"Theta2"
+			],
+			[
+				"sigmo",
+				"sigmoidGradient"
+			],
+			[
+				"partial",
+				"partial_3"
+			],
+			[
+				"delta",
+				"delta_2"
+			],
+			[
+				"L_",
+				"L_in"
+			],
+			[
+				"name",
+				"name_level"
+			],
+			[
+				"file",
+				"filepath"
+			],
+			[
+				"page",
+				"page_table"
+			],
+			[
+				"pag",
+				"page_table"
+			],
+			[
+				"phys",
+				"physical_memory"
+			],
+			[
+				"tra",
+				"trainLogisticRegression"
+			],
+			[
+				"h",
+				"hidden_layer"
+			],
+			[
+				"input",
+				"input_layer"
+			],
+			[
+				"The",
+				"Theta1"
+			],
+			[
+				"inpu",
+				"input_layer"
+			],
+			[
+				"num",
+				"num_labels"
+			],
+			[
+				"get",
+				"getElementById"
+			],
+			[
+				"padd",
+				"padding"
+			],
+			[
+				"padding",
+				"padding-left"
+			],
+			[
+				"form",
+				"form-container"
+			],
+			[
+				"back",
+				"background-color"
+			],
+			[
+				"excha",
+				"exchange_uname"
+			],
+			[
+				"exchang",
+				"exchange_url"
+			],
+			[
+				"goog",
+				"google_password"
+			],
+			[
+				"googl",
+				"google_user"
+			],
+			[
+				"get_",
+				"get_google_calendars"
+			],
+			[
+				"run",
+				"run_example_locked"
+			],
+			[
+				"exampe",
+				"example_locked"
+			],
+			[
+				"ou",
+				"output"
+			],
+			[
+				"env",
+				"env"
+			],
+			[
+				"tota",
+				"total_tries"
+			],
+			[
+				"total",
+				"total_correct"
+			],
+			[
+				"tot",
+				"total_correct"
+			],
+			[
+				"test",
+				"test_data"
+			],
+			[
+				"csv",
+				"csvread"
+			],
+			[
+				"result",
+				"result_row"
+			],
+			[
+				"else",
+				"elseif	elseif"
+			],
+			[
+				"last",
+				"last_line"
+			],
+			[
+				"log",
+				"log_grad"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "sky.py",
+			"settings":
+			{
+				"buffer_size": 14195,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/jgibson/semaphore/semaphore.c",
+			"settings":
+			{
+				"buffer_size": 3064,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "main.py",
+			"settings":
+			{
+				"buffer_size": 494,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "everything.py",
+			"settings":
+			{
+				"buffer_size": 10361,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 167.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/everything.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/main.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/sky.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/metric.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/.gitignore",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/otherwork/max_signal.py",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw13_helper.rb",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/jwu1/agrep/agrep.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/mwismer/agrep/agrep.c",
+		"/Users/rachelbobbins/Documents/fun_code/jquery_playground/home.html",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw13_unclear.txt",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hello.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/word_counter.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hash/hash.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/lmetz/hw19/hash.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/mwismer/hash/hash.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw17.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/the_great_airship.txt",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/aradford/agrep/agrep.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hash.c",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/benchmarks/Maximum_likelihood_Benchmark.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/benchmarks/Gridded_Signal_benchmark.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/neural_network/optimizeHiddenLayers copy.m",
+		"/Users/rachelbobbins/.bash_login",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/neural_network/trainNN.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/sky_visualization.py",
+		"/Users/rachelbobbins/Documents/jazmin.txt",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/ourwork/algorithms.py",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/neural_network/neuralNetwork.m",
+		"/Users/rachelbobbins/Documents/sierra/Gemfile",
+		"/Users/rachelbobbins/Documents/sierra/config/database.yml",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/dark_worlds/benchmarks/Random_Benchmark.py",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw08_helper.rb",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw10_helper.rb",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/vote_on_best.rb",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex3/displayData.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/linear_classifier/calculate_linear_average.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/linear_classifier/plot_number.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/preprocess.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/logistic_classifier/logistic_classifier.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/knn_classifier/knn_classifier.m",
+		"/Users/rachelbobbins/Downloads/Happiness/Happiness/FaceView.m",
+		"/Users/rachelbobbins/Downloads/Happiness/Happiness/HappinessViewController.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/linear_classifier/linear_classifier.m",
+		"/Users/rachelbobbins/Documents/personal_website/home.html",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/.gitignore",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/app/views/home/index.html.haml",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/app/views/layouts/application.html.erb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/app/assets/javascripts/ntc.js",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/app/assets/stylesheets/home.css.scss",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/app/assets/javascripts/home.js",
+		"/Users/rachelbobbins/Documents/personal_website/custom_mods.css",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/fog_of_hex/app/assets/stylesheets/home.css.scss",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/fog_of_hex/app/views/home/index.html.haml",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/config/database.yml",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/Gemfile",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/config/environment.rb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/config/application.rb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/config/environments/development.rb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/config/environments/production.rb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/fog_of_hex/app/assets/javascripts/home.js",
+		"/Users/rachelbobbins/Documents/fun_code/hex_fog/hex_displayer/app/assets/javascripts/home.js",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/stylesheets/application.css",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/views/home/index.html.haml",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/views/layouts/application.html.erb",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/stylesheets/home.css.scss",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/javascripts/home.js",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/stylesheets/custom.css",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/Gemfile",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/javascripts/application.js",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/assets/javascripts/home.js.coffee",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/config/routes.rb",
+		"/Users/rachelbobbins/Documents/workout_tracker/app/views/workouts/_form.html.haml",
+		"/Users/rachelbobbins/Documents/fun_code/hex_displayer/app/controllers/application_controller.rb",
+		"/Users/rachelbobbins/Documents/personal_website/hex_finder.html",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/README.md",
+		"/Users/rachelbobbins/Documents/workout_tracker/Gemfile",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex3/ex3.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/README",
+		"/Users/rachelbobbins/Documents/elkan.txt",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex8/estimateGaussian.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex8/selectThreshold.m",
+		"/Users/rachelbobbins/Documents/personal_website/assets/js/bootstrap.js",
+		"/Users/rachelbobbins/Documents/personal_website/index.html.haml",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/pca.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/projectData.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/ex7_pca.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/recoverData.m",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/britter/Hw13/agrep.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw13.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/sstrohkorb/agrep/README",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/sstrohkorb/agrep/agrep.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/rachel_copysarah.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/jli/hw13/agrep/agrep.c",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/findClosestCentroids.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/emailFeatures.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/processEmail.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/ex6_spam.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex7/computeCentroids.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/gaussianKernel.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/svmTrain.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/svmPredict.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/ex6.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex6/dataset3Params.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/logistic_nn/neural_classifier.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex3/predict.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex4/nnCostFunction.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/logistic_nn/logistic_classifier.m",
+		"/Users/rachelbobbins/Documents/Career/moderncv/rbobbins_resume.tex",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex4/checkNNGradients.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/ex5.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/trainLinearReg.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/linearRegCostFunction.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/learningCurve.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/validationCurve.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/polyFeatures.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex5/submit.m",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/print_reports.rb",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw02_script.rb",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/hw08_grades.txt",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex4/ex4.m",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/trout/Makefile",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/trout/util.c",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/trout/trout.c",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex3/oneVsAll.m",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/ex3/predictOneVsAll.m",
+		"/Users/rachelbobbins/Documents/FA2012_softsys/trout/trout.h",
+		"/Users/rachelbobbins/Documents/FA2012_machinelearning/machinelearning/logistic_nn/predictValues.m"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"[5]",
+			">= 6",
+			"== 2",
+			">= 6",
+			"== 7",
+			"==None",
+			"==",
+			"== 4",
+			"== 3",
+			"== 2",
+			"== 3",
+			"== 4",
+			"==",
+			">= 5",
+			"5",
+			".predictions",
+			"training_",
+			"x_h",
+			"len",
+			"(bin_x0[1] - bin_x0[0])",
+			"print_list",
+			"make_node",
+			"young",
+			"fix",
+			"hash",
+			"col",
+			"nhalo",
+			"equal",
+			"list_lookup",
+			"print_hashable",
+			"hover",
+			"input_layer",
+			"ICMP_TIME",
+			"tab",
+			"terminates",
+			"anoy",
+			"line",
+			"main",
+			");\n",
+			":date",
+			"line",
+			"copy",
+			"foo",
+			"2012",
+			"date",
+			"distance",
+			"      ",
+			"indent",
+			"grid",
+			" '')",
+			"date",
+			"line"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"miles"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "sky.py",
+					"settings":
+					{
+						"buffer_size": 14195,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2581,
+								2581
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 952.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/Users/rachelbobbins/Documents/FA2012_softsys/svn_repo/jgibson/semaphore/semaphore.c",
+					"settings":
+					{
+						"buffer_size": 3064,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1484.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "main.py",
+					"settings":
+					{
+						"buffer_size": 494,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								331,
+								331
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "everything.py",
+					"settings":
+					{
+						"buffer_size": 10361,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2930,
+								707
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 34.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 136.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 183.0,
+	"status_bar_visible": true
+}
